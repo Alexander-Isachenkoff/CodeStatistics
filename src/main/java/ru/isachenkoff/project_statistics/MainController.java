@@ -4,7 +4,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
-import lombok.SneakyThrows;
 
 import java.io.File;
 import java.util.List;
@@ -21,7 +20,6 @@ public class MainController {
 
     private File directory;
 
-    @SneakyThrows
     public static TreeItem<StatFile> toTree(StatFile statFile) {
         TreeItem<StatFile> treeItem = new TreeItem<>(statFile);
         if (statFile.getFile().isDirectory()) {
