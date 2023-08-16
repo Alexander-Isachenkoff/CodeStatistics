@@ -1,9 +1,12 @@
 package ru.isachenkoff.project_statistics;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
+import javafx.util.Pair;
+import ru.isachenkoff.project_statistics.util.FileUtils;
 
 import java.io.File;
 import java.util.List;
@@ -11,6 +14,8 @@ import java.util.stream.Collectors;
 
 public class MainController {
 
+    @FXML
+    private ListView<Pair<String, SimpleBooleanProperty>> fileTypeListView;
     @FXML
     private Button analysisBtn;
     @FXML
@@ -52,6 +57,22 @@ public class MainController {
             return new SimpleStringProperty(statFile.getNotEmptyLinesInfo());
         });
         table.getColumns().add(column);
+
+        fileTypeListView.setCellFactory(param -> {
+            return new ListCell<Pair<String, SimpleBooleanProperty>>() {
+                @Override
+                protected void updateItem(Pair<String, SimpleBooleanProperty> item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (!empty) {
+                        CheckBox checkBox = new CheckBox(item.getKey());
+                        checkBox.selectedProperty().bindBidirectional(item.getValue());
+                        setGraphic(checkBox);
+                    } else {
+                        setGraphic(null);
+                    }
+                }
+            };
+        });
     }
 
     @FXML
@@ -67,7 +88,20 @@ public class MainController {
 
     @FXML
     private void onAnalysis() {
-        TreeItem<StatFile> tree = toTree(new StatFile(directory));
+        StatFile statFile = new StatFile(directory);
+        List<StatFile> allFiles = statFile.flatFiles();
+        List<Pair<String, SimpleBooleanProperty>> extensions = allFiles.stream()
+                .filter(StatFile::isFile)
+                .map(StatFile::getFileName)
+                .map(FileUtils::getExtension)
+                .distinct()
+                .sorted()
+                .map(ext -> new Pair<>(ext, new SimpleBooleanProperty(true)))
+                .collect(Collectors.toList());
+
+        fileTypeListView.getItems().setAll(extensions);
+
+        TreeItem<StatFile> tree = toTree(statFile);
         table.setRoot(tree);
     }
 

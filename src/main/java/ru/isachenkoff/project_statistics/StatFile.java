@@ -33,6 +33,10 @@ public class StatFile {
         }
     }
 
+    public List<StatFile> flatFiles() {
+        return flatFiles(this);
+    }
+
     private void init() {
         if (isDirectory) {
             for (File file1 : file.listFiles()) {
@@ -107,5 +111,17 @@ public class StatFile {
 
     public File getFile() {
         return file;
+    }
+
+    public String getFileName() {
+        return file.getName();
+    }
+
+    public boolean isFile() {
+        return !isDirectory;
+    }
+
+    public boolean isDirectory() {
+        return isDirectory;
     }
 }
