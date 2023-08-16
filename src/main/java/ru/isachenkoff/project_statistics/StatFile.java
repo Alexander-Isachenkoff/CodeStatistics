@@ -1,5 +1,7 @@
 package ru.isachenkoff.project_statistics;
 
+import ru.isachenkoff.project_statistics.util.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,10 +16,12 @@ public class StatFile {
     private final boolean isDirectory;
     private int totalLines;
     private int notEmptyLines;
+    private final List<String> extFilter;
 
-    public StatFile(File file) {
+    public StatFile(File file, List<String> extensions) {
         this.file = file;
         isDirectory = file.isDirectory();
+        extFilter = extensions;
         init();
     }
 
@@ -33,6 +37,11 @@ public class StatFile {
         }
     }
 
+    public void setExtFilter(List<String> extFilter) {
+        this.extFilter.clear();
+        this.extFilter.addAll(extFilter);
+    }
+
     public List<StatFile> flatFiles() {
         return flatFiles(this);
     }
@@ -40,16 +49,21 @@ public class StatFile {
     private void init() {
         if (isDirectory) {
             for (File file1 : file.listFiles()) {
-                children.add(new StatFile(file1));
+                children.add(new StatFile(file1, extFilter));
             }
         } else {
             countLines();
         }
     }
 
+    public boolean isFiltered() {
+        return isDirectory || extFilter.contains(FileUtils.getExtension(file));
+    }
+
     public int getTotalLines() {
         if (isDirectory) {
-            return flatFiles(this).stream()
+            return flatFiles().stream()
+                    .filter(StatFile::isFiltered)
                     .mapToInt(statFile -> statFile.totalLines)
                     .filter(i -> i > -1)
                     .sum();
@@ -60,7 +74,8 @@ public class StatFile {
 
     public int getNotEmptyLines() {
         if (isDirectory) {
-            return flatFiles(this).stream()
+            return flatFiles().stream()
+                    .filter(StatFile::isFiltered)
                     .mapToInt(statFile -> statFile.notEmptyLines)
                     .filter(i -> i > -1)
                     .sum();

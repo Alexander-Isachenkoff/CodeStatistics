@@ -9,6 +9,7 @@ import javafx.util.Pair;
 import ru.isachenkoff.project_statistics.util.FileUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,8 +28,10 @@ public class MainController {
 
     public static TreeItem<StatFile> toTree(StatFile statFile) {
         TreeItem<StatFile> treeItem = new TreeItem<>(statFile);
+        treeItem.setExpanded(true);
         if (statFile.getFile().isDirectory()) {
             List<TreeItem<StatFile>> collect = statFile.getChildren().stream()
+                    .filter(StatFile::isFiltered)
                     .map(MainController::toTree)
                     .collect(Collectors.toList());
             treeItem.getChildren().setAll(collect);
@@ -88,7 +91,7 @@ public class MainController {
 
     @FXML
     private void onAnalysis() {
-        StatFile statFile = new StatFile(directory);
+        StatFile statFile = new StatFile(directory, new ArrayList<>());
         List<StatFile> allFiles = statFile.flatFiles();
         List<Pair<String, SimpleBooleanProperty>> extensions = allFiles.stream()
                 .filter(StatFile::isFile)
@@ -99,8 +102,28 @@ public class MainController {
                 .map(ext -> new Pair<>(ext, new SimpleBooleanProperty(true)))
                 .collect(Collectors.toList());
 
+        extensions.stream()
+                .map(Pair::getValue)
+                .forEach(prop -> prop.addListener((observable, oldValue, newValue) -> {
+                    statFile.setExtFilter(getSelectedExts());
+                    updateTable(statFile);
+                }));
+
         fileTypeListView.getItems().setAll(extensions);
 
+        statFile.setExtFilter(getSelectedExts());
+        updateTable(statFile);
+    }
+
+    private List<String> getSelectedExts() {
+        List<String> selectedExts = fileTypeListView.getItems().stream()
+                .filter(pair -> pair.getValue().getValue())
+                .map(Pair::getKey)
+                .collect(Collectors.toList());
+        return selectedExts;
+    }
+
+    private void updateTable(StatFile statFile) {
         TreeItem<StatFile> tree = toTree(statFile);
         table.setRoot(tree);
     }
