@@ -26,13 +26,13 @@ public class MainController {
 
     private File directory;
 
-    public static TreeItem<StatFile> toTree(StatFile statFile) {
+    public static TreeItem<StatFile> buildTree(StatFile statFile) {
         TreeItem<StatFile> treeItem = new TreeItem<>(statFile);
         treeItem.setExpanded(true);
         if (statFile.getFile().isDirectory()) {
             List<TreeItem<StatFile>> collect = statFile.getChildren().stream()
                     .filter(StatFile::isFiltered)
-                    .map(MainController::toTree)
+                    .map(MainController::buildTree)
                     .collect(Collectors.toList());
             treeItem.getChildren().setAll(collect);
         }
@@ -105,26 +105,25 @@ public class MainController {
         extensions.stream()
                 .map(Pair::getValue)
                 .forEach(prop -> prop.addListener((observable, oldValue, newValue) -> {
-                    statFile.setExtFilter(getSelectedExts());
-                    updateTable(statFile);
+                    statFile.setExtFilter(getSelectedExtensions());
+                    rebuildTable(statFile);
                 }));
 
         fileTypeListView.getItems().setAll(extensions);
 
-        statFile.setExtFilter(getSelectedExts());
-        updateTable(statFile);
+        statFile.setExtFilter(getSelectedExtensions());
+        rebuildTable(statFile);
     }
 
-    private List<String> getSelectedExts() {
-        List<String> selectedExts = fileTypeListView.getItems().stream()
+    private List<String> getSelectedExtensions() {
+        return fileTypeListView.getItems().stream()
                 .filter(pair -> pair.getValue().getValue())
                 .map(Pair::getKey)
                 .collect(Collectors.toList());
-        return selectedExts;
     }
 
-    private void updateTable(StatFile statFile) {
-        TreeItem<StatFile> tree = toTree(statFile);
+    private void rebuildTable(StatFile statFile) {
+        TreeItem<StatFile> tree = buildTree(statFile);
         table.setRoot(tree);
     }
 
