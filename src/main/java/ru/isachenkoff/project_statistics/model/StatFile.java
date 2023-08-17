@@ -1,4 +1,4 @@
-package ru.isachenkoff.project_statistics;
+package ru.isachenkoff.project_statistics.model;
 
 import ru.isachenkoff.project_statistics.util.FileUtils;
 
@@ -14,14 +14,14 @@ public class StatFile {
     private final List<StatFile> children = new ArrayList<>();
     private final File file;
     private final boolean isDirectory;
+    private boolean isTextFile;
+    private StatFile parent;
     private int totalLines;
     private int notEmptyLines;
-    private final List<String> extFilter;
 
-    public StatFile(File file, List<String> extensions) {
+    StatFile(File file) {
         this.file = file;
         isDirectory = file.isDirectory();
-        extFilter = extensions;
         init();
     }
 
@@ -37,9 +37,12 @@ public class StatFile {
         }
     }
 
-    public void setExtFilter(List<String> extFilter) {
-        this.extFilter.clear();
-        this.extFilter.addAll(extFilter);
+    public StatFileRoot getRoot() {
+        StatFile parent = this;
+        while (parent.parent != null) {
+            parent = parent.parent;
+        }
+        return (StatFileRoot) parent;
     }
 
     public List<StatFile> flatFiles() {
@@ -49,23 +52,30 @@ public class StatFile {
     private void init() {
         if (isDirectory) {
             for (File file1 : file.listFiles()) {
-                children.add(new StatFile(file1, extFilter));
+                StatFile statFile = new StatFile(file1);
+                children.add(statFile);
+                statFile.parent = this;
             }
         } else {
             countLines();
         }
     }
 
-    public boolean isFiltered() {
-        return isDirectory || extFilter.contains(FileUtils.getExtension(file));
+    public boolean isVisible() {
+        if (isFile()) {
+            return getRoot().getExtFilter().contains(FileUtils.getExtension(file)) && (!getRoot().isTextFilesOnly() || isTextFile);
+        } else if (!getRoot().isEmptyDirs()) {
+            return flatFiles(this).stream().anyMatch(StatFile::isVisible);
+        }
+        return true;
     }
 
     public int getTotalLines() {
         if (isDirectory) {
             return flatFiles().stream()
-                    .filter(StatFile::isFiltered)
+                    .filter(StatFile::isVisible)
+                    .filter(StatFile::isTextFile)
                     .mapToInt(statFile -> statFile.totalLines)
-                    .filter(i -> i > -1)
                     .sum();
         } else {
             return totalLines;
@@ -75,9 +85,9 @@ public class StatFile {
     public int getNotEmptyLines() {
         if (isDirectory) {
             return flatFiles().stream()
-                    .filter(StatFile::isFiltered)
+                    .filter(StatFile::isVisible)
+                    .filter(StatFile::isTextFile)
                     .mapToInt(statFile -> statFile.notEmptyLines)
-                    .filter(i -> i > -1)
                     .sum();
         } else {
             return notEmptyLines;
@@ -85,30 +95,29 @@ public class StatFile {
     }
 
     private void countLines() {
+        List<String> lines;
         try {
-            List<String> lines = Files.readAllLines(file.toPath());
-            totalLines = lines.size();
-            notEmptyLines = (int) lines.stream().filter(s -> !s.trim().isEmpty()).count();
+            lines = Files.readAllLines(file.toPath());
         } catch (IOException e) {
-            totalLines = -1;
-            notEmptyLines = -1;
+            isTextFile = false;
+            return;
         }
+        isTextFile = true;
+        totalLines = lines.size();
+        notEmptyLines = (int) lines.stream().filter(s -> !s.trim().isEmpty()).count();
     }
 
     public String getTotalLinesInfo() {
-        int totalLines = getTotalLines();
-        if (totalLines == -1) {
-            return "";
+        if (isTextFile || isDirectory) {
+            return String.valueOf(getTotalLines());
         } else {
-            return String.valueOf(totalLines);
+            return "";
         }
     }
 
     public String getNotEmptyLinesInfo() {
-        int totalLines = getTotalLines();
-        if (totalLines == -1) {
-            return "";
-        } else {
+        if (isTextFile || isDirectory) {
+            int totalLines = getTotalLines();
             int notEmptyLines = getNotEmptyLines();
             float notEmptyRatio;
             if (totalLines > 0) {
@@ -117,6 +126,8 @@ public class StatFile {
                 notEmptyRatio = 0;
             }
             return String.format("%d (%.0f%%)", notEmptyLines, notEmptyRatio);
+        } else {
+            return "";
         }
     }
 
@@ -136,7 +147,7 @@ public class StatFile {
         return !isDirectory;
     }
 
-    public boolean isDirectory() {
-        return isDirectory;
+    public boolean isTextFile() {
+        return isTextFile;
     }
 }

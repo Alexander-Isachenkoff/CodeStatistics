@@ -6,15 +6,20 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.util.Pair;
+import ru.isachenkoff.project_statistics.model.StatFile;
+import ru.isachenkoff.project_statistics.model.StatFileRoot;
 import ru.isachenkoff.project_statistics.util.FileUtils;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MainController {
 
+    @FXML
+    private CheckBox emptyDirsCheck;
+    @FXML
+    private CheckBox textFilesOnlyCheck;
     @FXML
     private ListView<Pair<String, SimpleBooleanProperty>> fileTypeListView;
     @FXML
@@ -25,13 +30,14 @@ public class MainController {
     private TreeTableView<StatFile> table;
 
     private File directory;
+    private StatFileRoot statFileRoot;
 
     public static TreeItem<StatFile> buildTree(StatFile statFile) {
         TreeItem<StatFile> treeItem = new TreeItem<>(statFile);
         treeItem.setExpanded(true);
         if (statFile.getFile().isDirectory()) {
             List<TreeItem<StatFile>> collect = statFile.getChildren().stream()
-                    .filter(StatFile::isFiltered)
+                    .filter(StatFile::isVisible)
                     .map(MainController::buildTree)
                     .collect(Collectors.toList());
             treeItem.getChildren().setAll(collect);
@@ -91,8 +97,8 @@ public class MainController {
 
     @FXML
     private void onAnalysis() {
-        StatFile statFile = new StatFile(directory, new ArrayList<>());
-        List<StatFile> allFiles = statFile.flatFiles();
+        statFileRoot = new StatFileRoot(directory);
+        List<StatFile> allFiles = statFileRoot.flatFiles();
         List<Pair<String, SimpleBooleanProperty>> extensions = allFiles.stream()
                 .filter(StatFile::isFile)
                 .map(StatFile::getFileName)
@@ -105,14 +111,17 @@ public class MainController {
         extensions.stream()
                 .map(Pair::getValue)
                 .forEach(prop -> prop.addListener((observable, oldValue, newValue) -> {
-                    statFile.setExtFilter(getSelectedExtensions());
-                    rebuildTable(statFile);
+                    statFileRoot.setExtFilter(getSelectedExtensions());
+                    rebuildTable(statFileRoot);
                 }));
 
         fileTypeListView.getItems().setAll(extensions);
 
-        statFile.setExtFilter(getSelectedExtensions());
-        rebuildTable(statFile);
+        statFileRoot.setExtFilter(getSelectedExtensions());
+        emptyDirsCheck.selectedProperty().bindBidirectional(statFileRoot.emptyDirsProperty());
+        textFilesOnlyCheck.selectedProperty().bindBidirectional(statFileRoot.textFilesOnlyProperty());
+
+        rebuildTable(statFileRoot);
     }
 
     private List<String> getSelectedExtensions() {
@@ -125,6 +134,20 @@ public class MainController {
     private void rebuildTable(StatFile statFile) {
         TreeItem<StatFile> tree = buildTree(statFile);
         table.setRoot(tree);
+    }
+
+    @FXML
+    private void onEmptyDirs() {
+        if (statFileRoot != null) {
+            rebuildTable(statFileRoot);
+        }
+    }
+
+    @FXML
+    private void onTextFiles() {
+        if (statFileRoot != null) {
+            rebuildTable(statFileRoot);
+        }
     }
 
 }
