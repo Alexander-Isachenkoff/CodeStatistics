@@ -1,0 +1,50 @@
+.tab-pane .tab:top {
+    -fx-padding: 2 6;
+    -fx-background-color: #f2f2f2;
+    -fx-background-radius: 0;
+    -fx-background-insets: 1 1 0 0;
+    -fx-border-color: #bbb;
+    -fx-border-width: 0 0 2 0;
+}
+
+.tab-pane .tab:top:hover {
+    -fx-background-color: lightgray;
+    -fx-border-color: #aaa;
+}
+
+.tab-pane .tab:top:selected {
+    -fx-background-color: white;
+    -fx-border-color: rgb(81, 129, 184);
+}
+
+.tab-pane .headers-region {
+    -fx-background-color: lightgray;
+}
+
+.tab-pane .tab-header-area {
+    -fx-padding: 8 0 0 0;
+    -fx-background-color: white;
+}
+
+.tab-pane .tab-header-background {
+    -fx-background-color: #f2f2f2;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: lightgray;
+}
+
+.tab-pane .tab-close-button {
+    -fx-background-color: #888;
+    -fx-effect: none;
+}
+
+.tab-pane .tab-close-button:hover {
+    -fx-background-color: firebrick;
+}
+
+.tab-pane .tab:top .tab-label {
+    -fx-padding: 0 5;
+}
+
+.tab-pane:focused .tab:selected .focus-indicator {
+    -fx-border-color: none;
+}
