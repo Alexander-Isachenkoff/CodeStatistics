@@ -1,150 +1,58 @@
 package ru.isachenkoff.project_statistics;
 
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.stage.DirectoryChooser;
-import javafx.util.Pair;
-import ru.isachenkoff.project_statistics.model.FileTypeStat;
-import ru.isachenkoff.project_statistics.model.StatFile;
-import ru.isachenkoff.project_statistics.model.StatFileRoot;
 
 import java.io.File;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.io.IOException;
 
 public class MainController {
 
-    @FXML
-    private CheckBox emptyDirsCheck;
-    @FXML
-    private CheckBox textFilesOnlyCheck;
-    @FXML
-    private ListView<Pair<FileTypeStat, SimpleBooleanProperty>> fileTypeListView;
-    @FXML
-    private Button analysisBtn;
-    @FXML
-    private TextField pathField;
-    @FXML
-    private TreeTableView<StatFile> table;
+    private static MainController instance;
 
-    private File directory;
-    private StatFileRoot statFileRoot;
+    @FXML
+    private TabPane tabPane;
 
-    public static TreeItem<StatFile> buildTree(StatFile statFile) {
-        TreeItem<StatFile> treeItem = new TreeItem<>(statFile);
-        treeItem.setExpanded(true);
-        if (statFile.getFile().isDirectory()) {
-            List<TreeItem<StatFile>> collect = statFile.getChildren().stream()
-                    .filter(StatFile::isVisible)
-                    .map(MainController::buildTree)
-                    .collect(Collectors.toList());
-            treeItem.getChildren().setAll(collect);
-        }
-        return treeItem;
+    public MainController() {
+        instance = this;
+    }
+
+    public static MainController getInstance() {
+        return instance;
     }
 
     @FXML
-    private void initialize() {
-        TreeTableColumn<StatFile, String> column;
-
-        column = new TreeTableColumn<>("Путь файла");
-        column.setPrefWidth(300);
-        column.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getValue().getFile().getName()));
-        table.getColumns().add(column);
-
-        column = new TreeTableColumn<>("Всего строк");
-        column.setPrefWidth(120);
-        column.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getValue().getTotalLinesInfo()));
-        table.getColumns().add(column);
-
-        column = new TreeTableColumn<>("Непустых строк");
-        column.setPrefWidth(120);
-        column.setCellValueFactory(param -> {
-            StatFile statFile = param.getValue().getValue();
-            return new SimpleStringProperty(statFile.getNotEmptyLinesInfo());
-        });
-        table.getColumns().add(column);
-
-        fileTypeListView.setCellFactory(param -> {
-            return new ListCell<Pair<FileTypeStat, SimpleBooleanProperty>>() {
-                @Override
-                protected void updateItem(Pair<FileTypeStat, SimpleBooleanProperty> item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (!empty) {
-                        String text = String.format("%s (%d)", item.getKey().getFileType(), item.getKey().getCount());
-                        CheckBox checkBox = new CheckBox(text);
-                        checkBox.selectedProperty().bindBidirectional(item.getValue());
-                        setGraphic(checkBox);
-                    } else {
-                        setGraphic(null);
-                    }
-                }
-            };
-        });
-    }
-
-    @FXML
-    private void onChooseDir() {
+    private void onNew() {
         DirectoryChooser dirChooser = new DirectoryChooser();
-        File dir = dirChooser.showDialog(table.getScene().getWindow());
+        File dir = dirChooser.showDialog(tabPane.getScene().getWindow());
         if (dir != null) {
-            directory = dir;
-            pathField.setText(directory.getAbsolutePath());
-            analysisBtn.setDisable(false);
+            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("fxml/analysis.fxml"));
+            Parent load;
+            try {
+                load = fxmlLoader.load();
+                AnalysisController controller = fxmlLoader.getController();
+                controller.setDirectory(dir);
+                controller.analysis();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            newTab(dir.getAbsolutePath(), load);
         }
     }
 
-    @FXML
-    private void onAnalysis() {
-        statFileRoot = new StatFileRoot(directory);
-
-        List<Pair<FileTypeStat, SimpleBooleanProperty>> fileTypesBoolPairs =
-                statFileRoot.getFileTypesStatistics().stream()
-                        .map(fileTypeStat -> new Pair<>(fileTypeStat, new SimpleBooleanProperty(true)))
-                        .collect(Collectors.toList());
-
-        fileTypesBoolPairs.stream()
-                .map(Pair::getValue)
-                .forEach(prop -> prop.addListener((observable, oldValue, newValue) -> {
-                    statFileRoot.setExtFilter(getSelectedFileTypes());
-                    rebuildTable(statFileRoot);
-                }));
-
-        fileTypeListView.getItems().setAll(fileTypesBoolPairs);
-
-        statFileRoot.setExtFilter(getSelectedFileTypes());
-        emptyDirsCheck.selectedProperty().bindBidirectional(statFileRoot.emptyDirsProperty());
-        textFilesOnlyCheck.selectedProperty().bindBidirectional(statFileRoot.textFilesOnlyProperty());
-
-        rebuildTable(statFileRoot);
+    private void newTab(String title, Parent load) {
+        Tab signInTab = new Tab(title);
+        signInTab.setContent(load);
+        tabPane.getTabs().add(signInTab);
+        tabPane.getSelectionModel().select(signInTab);
     }
 
-    private List<String> getSelectedFileTypes() {
-        return fileTypeListView.getItems().stream()
-                .filter(pair -> pair.getValue().get())
-                .map(pair -> pair.getKey().getFileType())
-                .collect(Collectors.toList());
-    }
-
-    private void rebuildTable(StatFile statFile) {
-        TreeItem<StatFile> tree = buildTree(statFile);
-        table.setRoot(tree);
-    }
-
-    @FXML
-    private void onEmptyDirs() {
-        if (statFileRoot != null) {
-            rebuildTable(statFileRoot);
-        }
-    }
-
-    @FXML
-    private void onTextFiles() {
-        if (statFileRoot != null) {
-            rebuildTable(statFileRoot);
-        }
+    public Tab getSelectedTab() {
+        return tabPane.getSelectionModel().getSelectedItem();
     }
 
 }
