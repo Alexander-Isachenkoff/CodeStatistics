@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class StatFile {
 
@@ -51,7 +52,7 @@ public class StatFile {
 
     private void init() {
         if (isDirectory) {
-            for (File file1 : file.listFiles()) {
+            for (File file1 : Optional.ofNullable(file.listFiles()).orElse(new File[0])) {
                 StatFile statFile = new StatFile(file1);
                 children.add(statFile);
                 statFile.parent = this;
