@@ -1,9 +1,11 @@
 package ru.isachenkoff.project_statistics.model;
 
 import javafx.beans.property.SimpleBooleanProperty;
+import ru.isachenkoff.project_statistics.util.FileUtils;
 
 import java.io.File;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class StatFileRoot extends StatFile {
 
@@ -13,6 +15,16 @@ public class StatFileRoot extends StatFile {
 
     public StatFileRoot(File file) {
         super(file);
+    }
+
+    public List<String> getAllFileTypes() {
+        return flatFiles().stream()
+                .filter(StatFile::isFile)
+                .map(StatFile::getFileName)
+                .map(FileUtils::getExtension)
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     public List<String> getExtFilter() {

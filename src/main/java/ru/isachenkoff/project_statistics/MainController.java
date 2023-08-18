@@ -73,7 +73,11 @@ public class MainController {
                 protected void updateItem(Pair<String, SimpleBooleanProperty> item, boolean empty) {
                     super.updateItem(item, empty);
                     if (!empty) {
-                        CheckBox checkBox = new CheckBox(item.getKey());
+                        long count = statFileRoot.flatFiles().stream()
+                                .filter(statFile -> FileUtils.getExtension(statFile.getFileName()).equals(item.getKey()))
+                                .count();
+                        String text = String.format("%s (%d)", item.getKey(), count);
+                        CheckBox checkBox = new CheckBox(text);
                         checkBox.selectedProperty().bindBidirectional(item.getValue());
                         setGraphic(checkBox);
                     } else {
@@ -98,35 +102,31 @@ public class MainController {
     @FXML
     private void onAnalysis() {
         statFileRoot = new StatFileRoot(directory);
-        List<StatFile> allFiles = statFileRoot.flatFiles();
-        List<Pair<String, SimpleBooleanProperty>> extensions = allFiles.stream()
-                .filter(StatFile::isFile)
-                .map(StatFile::getFileName)
-                .map(FileUtils::getExtension)
-                .distinct()
-                .sorted()
-                .map(ext -> new Pair<>(ext, new SimpleBooleanProperty(true)))
-                .collect(Collectors.toList());
 
-        extensions.stream()
+        List<Pair<String, SimpleBooleanProperty>> fileTypesBoolPairs =
+                statFileRoot.getAllFileTypes().stream()
+                        .map(ext -> new Pair<>(ext, new SimpleBooleanProperty(true)))
+                        .collect(Collectors.toList());
+
+        fileTypesBoolPairs.stream()
                 .map(Pair::getValue)
                 .forEach(prop -> prop.addListener((observable, oldValue, newValue) -> {
-                    statFileRoot.setExtFilter(getSelectedExtensions());
+                    statFileRoot.setExtFilter(getSelectedFileTypes());
                     rebuildTable(statFileRoot);
                 }));
 
-        fileTypeListView.getItems().setAll(extensions);
+        fileTypeListView.getItems().setAll(fileTypesBoolPairs);
 
-        statFileRoot.setExtFilter(getSelectedExtensions());
+        statFileRoot.setExtFilter(getSelectedFileTypes());
         emptyDirsCheck.selectedProperty().bindBidirectional(statFileRoot.emptyDirsProperty());
         textFilesOnlyCheck.selectedProperty().bindBidirectional(statFileRoot.textFilesOnlyProperty());
 
         rebuildTable(statFileRoot);
     }
 
-    private List<String> getSelectedExtensions() {
+    private List<String> getSelectedFileTypes() {
         return fileTypeListView.getItems().stream()
-                .filter(pair -> pair.getValue().getValue())
+                .filter(pair -> pair.getValue().get())
                 .map(Pair::getKey)
                 .collect(Collectors.toList());
     }
