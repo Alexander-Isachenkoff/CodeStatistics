@@ -6,9 +6,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.util.Pair;
+import ru.isachenkoff.project_statistics.model.FileTypeStat;
 import ru.isachenkoff.project_statistics.model.StatFile;
 import ru.isachenkoff.project_statistics.model.StatFileRoot;
-import ru.isachenkoff.project_statistics.util.FileUtils;
 
 import java.io.File;
 import java.util.List;
@@ -21,7 +21,7 @@ public class MainController {
     @FXML
     private CheckBox textFilesOnlyCheck;
     @FXML
-    private ListView<Pair<String, SimpleBooleanProperty>> fileTypeListView;
+    private ListView<Pair<FileTypeStat, SimpleBooleanProperty>> fileTypeListView;
     @FXML
     private Button analysisBtn;
     @FXML
@@ -68,15 +68,12 @@ public class MainController {
         table.getColumns().add(column);
 
         fileTypeListView.setCellFactory(param -> {
-            return new ListCell<Pair<String, SimpleBooleanProperty>>() {
+            return new ListCell<Pair<FileTypeStat, SimpleBooleanProperty>>() {
                 @Override
-                protected void updateItem(Pair<String, SimpleBooleanProperty> item, boolean empty) {
+                protected void updateItem(Pair<FileTypeStat, SimpleBooleanProperty> item, boolean empty) {
                     super.updateItem(item, empty);
                     if (!empty) {
-                        long count = statFileRoot.flatFiles().stream()
-                                .filter(statFile -> FileUtils.getExtension(statFile.getFileName()).equals(item.getKey()))
-                                .count();
-                        String text = String.format("%s (%d)", item.getKey(), count);
+                        String text = String.format("%s (%d)", item.getKey().getFileType(), item.getKey().getCount());
                         CheckBox checkBox = new CheckBox(text);
                         checkBox.selectedProperty().bindBidirectional(item.getValue());
                         setGraphic(checkBox);
@@ -103,9 +100,9 @@ public class MainController {
     private void onAnalysis() {
         statFileRoot = new StatFileRoot(directory);
 
-        List<Pair<String, SimpleBooleanProperty>> fileTypesBoolPairs =
-                statFileRoot.getAllFileTypes().stream()
-                        .map(ext -> new Pair<>(ext, new SimpleBooleanProperty(true)))
+        List<Pair<FileTypeStat, SimpleBooleanProperty>> fileTypesBoolPairs =
+                statFileRoot.getFileTypesStatistics().stream()
+                        .map(fileTypeStat -> new Pair<>(fileTypeStat, new SimpleBooleanProperty(true)))
                         .collect(Collectors.toList());
 
         fileTypesBoolPairs.stream()
@@ -127,7 +124,7 @@ public class MainController {
     private List<String> getSelectedFileTypes() {
         return fileTypeListView.getItems().stream()
                 .filter(pair -> pair.getValue().get())
-                .map(Pair::getKey)
+                .map(pair -> pair.getKey().getFileType())
                 .collect(Collectors.toList());
     }
 
