@@ -4,11 +4,14 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.util.Pair;
 import ru.isachenkoff.project_statistics.model.FileTypeStat;
 import ru.isachenkoff.project_statistics.model.StatFile;
 import ru.isachenkoff.project_statistics.model.StatFileRoot;
+import ru.isachenkoff.project_statistics.util.FileTypesIcons;
 
 import java.io.File;
 import java.util.List;
@@ -74,9 +77,14 @@ public class AnalysisController {
                     super.updateItem(item, empty);
                     if (!empty) {
                         String text = String.format("%s (%d)", item.getKey().getFileType(), item.getKey().getCount());
-                        CheckBox checkBox = new CheckBox(text);
+                        CheckBox checkBox = new CheckBox();
                         checkBox.selectedProperty().bindBidirectional(item.getValue());
-                        setGraphic(checkBox);
+                        ImageView imageView = new ImageView();
+                        imageView.setPreserveRatio(true);
+                        imageView.setFitWidth(16);
+                        imageView.setFitHeight(16);
+                        imageView.setImage(FileTypesIcons.getIconForType(item.getKey().getFileType()));
+                        setGraphic(new HBox(checkBox, new HBox(4, imageView, new Label(text))));
                     } else {
                         setGraphic(null);
                     }
