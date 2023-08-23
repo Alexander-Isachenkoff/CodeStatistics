@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 public class AnalysisController {
 
     @FXML
+    private CheckBox selectAllCheck;
+    @FXML
     private CheckBox emptyDirsCheck;
     @FXML
     private CheckBox textFilesOnlyCheck;
@@ -56,6 +58,8 @@ public class AnalysisController {
 
     @FXML
     private void initialize() {
+        table.getColumns().clear();
+
         TreeTableColumn<StatFile, String> column;
 
         column = new TreeTableColumn<>("Путь файла");
@@ -173,6 +177,11 @@ public class AnalysisController {
         fileTypeListView.getItems().setAll(fileTypesBoolPairs);
 
         statFileRoot.setExtFilter(getSelectedFileTypes());
+        selectAllCheck.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            for (Pair<FileTypeStat, SimpleBooleanProperty> item : fileTypeListView.getItems()) {
+                item.getValue().set(newValue);
+            }
+        });
         emptyDirsCheck.selectedProperty().bindBidirectional(statFileRoot.emptyDirsProperty());
         textFilesOnlyCheck.selectedProperty().bindBidirectional(statFileRoot.textFilesOnlyProperty());
 

@@ -7,11 +7,12 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.TreeTableColumn?>
 <?import javafx.scene.control.TreeTableView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="10.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.isachenkoff.project_statistics.AnalysisController">
+<VBox spacing="10.0" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.isachenkoff.project_statistics.AnalysisController">
     <children>
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <children>
@@ -27,14 +28,29 @@
                <children>
                       <TitledPane text="Тип файла">
                           <content>
-                              <ListView fx:id="fileTypeListView" prefHeight="200.0" prefWidth="180.0" />
+                        <VBox style="-fx-padding: 0;">
+                           <children>
+                              <HBox style="-fx-background-color: white;">
+                                 <children>
+                                    <CheckBox fx:id="selectAllCheck" mnemonicParsing="false" selected="true" text="Выбрать все" />
+                                 </children>
+                                 <padding>
+                                    <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                                 </padding>
+                              </HBox>
+                                    <ListView fx:id="fileTypeListView" prefHeight="250.0" prefWidth="180.0" styleClass="file-types-list" />
+                           </children>
+                        </VBox>
                           </content>
                       </TitledPane>
                   <CheckBox fx:id="emptyDirsCheck" mnemonicParsing="false" onAction="#onEmptyDirs" text="Пустые папки" />
                   <CheckBox fx:id="textFilesOnlyCheck" mnemonicParsing="false" onAction="#onTextFiles" text="Только текстовые файлы" />
                </children>
             </VBox>
-              <TreeTableView fx:id="table" HBox.hgrow="ALWAYS" />
+              <TreeTableView fx:id="table" HBox.hgrow="ALWAYS">
+               <columns>
+                  <TreeTableColumn prefWidth="202.0" text="Column X" />
+               </columns></TreeTableView>
          </children>
       </HBox>
     </children>
