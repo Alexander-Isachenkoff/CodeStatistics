@@ -4,6 +4,14 @@
     -fx-background-insets: 0, 1, 2;
 }
 
+.text-field {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-background-color: white;
+    -fx-border-color: lightgray;
+    -fx-highlight-fill: rgb(0, 120, 215);
+}
+
 .tab-pane .tab:top {
     -fx-padding: 2 6;
     -fx-background-color: #f2f2f2;
