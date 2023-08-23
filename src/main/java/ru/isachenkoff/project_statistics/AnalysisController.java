@@ -3,15 +3,16 @@ package ru.isachenkoff.project_statistics;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.util.Pair;
 import ru.isachenkoff.project_statistics.model.FileTypeStat;
 import ru.isachenkoff.project_statistics.model.StatFile;
 import ru.isachenkoff.project_statistics.model.StatFileRoot;
-import ru.isachenkoff.project_statistics.util.FileTypesIcons;
 
 import java.io.File;
 import java.util.List;
@@ -76,15 +77,21 @@ public class AnalysisController {
                 protected void updateItem(Pair<FileTypeStat, SimpleBooleanProperty> item, boolean empty) {
                     super.updateItem(item, empty);
                     if (!empty) {
-                        String text = String.format("%s (%d)", item.getKey().getFileType(), item.getKey().getCount());
+                        String text = String.format("%s (%d)", item.getKey().getFileType().getTypeName(), item.getKey().getCount());
                         CheckBox checkBox = new CheckBox();
                         checkBox.selectedProperty().bindBidirectional(item.getValue());
                         ImageView imageView = new ImageView();
                         imageView.setPreserveRatio(true);
-                        imageView.setFitWidth(16);
-                        imageView.setFitHeight(16);
-                        imageView.setImage(FileTypesIcons.getIconForType(item.getKey().getFileType()));
-                        setGraphic(new HBox(checkBox, new HBox(4, imageView, new Label(text))));
+                        int size = 20;
+                        imageView.setFitWidth(size);
+                        imageView.setFitHeight(size);
+                        imageView.setImage(item.getKey().getFileType().getImage());
+                        VBox vBox = new VBox(imageView);
+                        vBox.setAlignment(Pos.CENTER);
+                        vBox.setMinSize(size, size);
+                        HBox hBox = new HBox(checkBox, new HBox(4, vBox, new Label(text)));
+                        hBox.setAlignment(Pos.CENTER_LEFT);
+                        setGraphic(hBox);
                     } else {
                         setGraphic(null);
                     }
@@ -142,7 +149,7 @@ public class AnalysisController {
     private List<String> getSelectedFileTypes() {
         return fileTypeListView.getItems().stream()
                 .filter(pair -> pair.getValue().get())
-                .map(pair -> pair.getKey().getFileType())
+                .map(pair -> pair.getKey().getFileType().getExtension())
                 .collect(Collectors.toList());
     }
 

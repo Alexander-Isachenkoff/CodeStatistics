@@ -6,6 +6,6 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class FileTypeStat {
-    private String fileType;
+    private FileType fileType;
     private int count;
 }

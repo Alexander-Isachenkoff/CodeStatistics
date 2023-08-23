@@ -26,7 +26,7 @@ public class StatFileRoot extends StatFile {
             int count = (int) allFiles.stream()
                     .filter(statFile -> FileUtils.getExtension(statFile.getFileName()).equals(fileType))
                     .count();
-            fileTypeStats.add(new FileTypeStat(fileType, count));
+            fileTypeStats.add(new FileTypeStat(FileType.of(fileType), count));
         }
         return fileTypeStats;
     }
