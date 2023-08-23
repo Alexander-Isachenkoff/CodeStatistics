@@ -132,9 +132,12 @@ public class AnalysisController {
                         VBox vBox = new VBox(imageView);
                         vBox.setAlignment(Pos.CENTER);
                         vBox.setMinSize(size, size);
-                        HBox hBox = new HBox(checkBox, new HBox(4, vBox, new Label(text)));
+                        Text textNode = new Text(text);
+                        textNode.setFontSmoothingType(FontSmoothingType.LCD);
+                        HBox hBox = new HBox(4, vBox, textNode);
                         hBox.setAlignment(Pos.CENTER_LEFT);
-                        setGraphic(hBox);
+                        checkBox.setGraphic(hBox);
+                        setGraphic(checkBox);
                     } else {
                         setGraphic(null);
                     }
