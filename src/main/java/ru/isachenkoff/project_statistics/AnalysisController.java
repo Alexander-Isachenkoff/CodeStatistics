@@ -73,12 +73,14 @@ public class AnalysisController {
                         imageView.setFitWidth(size);
                         imageView.setFitHeight(size);
                         Image image;
-                        if (getTreeTableRow().getTreeItem().getValue().isFile()) {
-                            image = FileType.of(FileUtils.getExtension(item)).getImage();
-                        } else {
-                            image = FileType.DIRECTORY_IMAGE;
+                        if (getTreeTableRow().getTreeItem() != null) {
+                            if (getTreeTableRow().getTreeItem().getValue().isFile()) {
+                                image = FileType.of(FileUtils.getExtension(item)).getImage();
+                            } else {
+                                image = FileType.DIRECTORY_IMAGE;
+                            }
+                            imageView.setImage(image);
                         }
-                        imageView.setImage(image);
                         VBox vBox = new VBox(imageView);
                         vBox.setAlignment(Pos.CENTER);
                         vBox.setMinSize(size, size);
