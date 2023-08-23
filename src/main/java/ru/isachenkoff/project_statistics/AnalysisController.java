@@ -8,11 +8,15 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.FontSmoothingType;
+import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.util.Pair;
+import ru.isachenkoff.project_statistics.model.FileType;
 import ru.isachenkoff.project_statistics.model.FileTypeStat;
 import ru.isachenkoff.project_statistics.model.StatFile;
 import ru.isachenkoff.project_statistics.model.StatFileRoot;
+import ru.isachenkoff.project_statistics.util.FileUtils;
 
 import java.io.File;
 import java.util.List;
@@ -56,6 +60,32 @@ public class AnalysisController {
         column = new TreeTableColumn<>("Путь файла");
         column.setPrefWidth(300);
         column.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getValue().getFile().getName()));
+        column.setCellFactory(param -> {
+            return new TreeTableCell<StatFile, String>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (!empty) {
+                        ImageView imageView = new ImageView();
+                        imageView.setPreserveRatio(true);
+                        int size = 16;
+                        imageView.setFitWidth(size);
+                        imageView.setFitHeight(size);
+                        imageView.setImage(FileType.of(FileUtils.getExtension(item)).getImage());
+                        VBox vBox = new VBox(imageView);
+                        vBox.setAlignment(Pos.CENTER);
+                        vBox.setMinSize(size, size);
+                        Text text = new Text(item);
+                        text.setFontSmoothingType(FontSmoothingType.LCD);
+                        HBox hBox = new HBox(4, vBox, text);
+                        hBox.setAlignment(Pos.CENTER_LEFT);
+                        setGraphic(hBox);
+                    } else {
+                        setGraphic(null);
+                    }
+                }
+            };
+        });
         table.getColumns().add(column);
 
         column = new TreeTableColumn<>("Всего строк");

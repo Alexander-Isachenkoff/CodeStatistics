@@ -48,3 +48,12 @@
 .tab-pane:focused .tab:selected .focus-indicator {
     -fx-border-color: none;
 }
+
+.tree-table-row-cell {
+    -fx-cell-size: 20;
+}
+
+.table-column {
+    -fx-cell-size: 20;
+    -fx-padding: 0;
+}
