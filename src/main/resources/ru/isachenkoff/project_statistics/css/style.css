@@ -70,7 +70,7 @@
 
 .table-column {
     -fx-cell-size: 20;
-    -fx-padding: 0;
+    -fx-padding: 0 4;
 }
 
 .tree-table-view {

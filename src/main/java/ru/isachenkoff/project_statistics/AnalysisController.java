@@ -104,6 +104,7 @@ public class AnalysisController {
         column = new TreeTableColumn<>("Всего строк");
         column.setPrefWidth(120);
         column.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getValue().getTotalLinesInfo()));
+        column.setStyle("-fx-alignment: CENTER_RIGHT");
         table.getColumns().add(column);
 
         column = new TreeTableColumn<>("Непустых строк");
@@ -112,6 +113,7 @@ public class AnalysisController {
             StatFile statFile = param.getValue().getValue();
             return new SimpleStringProperty(statFile.getNotEmptyLinesInfo());
         });
+        column.setStyle("-fx-alignment: CENTER_RIGHT");
         table.getColumns().add(column);
 
         fileTypeListView.setCellFactory(param -> {
