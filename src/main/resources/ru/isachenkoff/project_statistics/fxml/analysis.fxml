@@ -30,7 +30,7 @@
                           <content>
                         <VBox style="-fx-padding: 0;">
                            <children>
-                              <HBox style="-fx-background-color: white;">
+                              <HBox style="-fx-background-color: white; -fx-border-color: lightgray; -fx-border-width: 0 0 1 0;">
                                  <children>
                                     <CheckBox fx:id="selectAllCheck" mnemonicParsing="false" selected="true" text="Выбрать все" />
                                  </children>
