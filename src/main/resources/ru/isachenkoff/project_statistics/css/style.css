@@ -51,6 +51,7 @@
 
 .tree-table-row-cell {
     -fx-cell-size: 20;
+    -fx-indent: 20;
 }
 
 .table-column {

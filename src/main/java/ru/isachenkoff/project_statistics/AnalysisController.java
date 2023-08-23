@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -71,7 +72,13 @@ public class AnalysisController {
                         int size = 16;
                         imageView.setFitWidth(size);
                         imageView.setFitHeight(size);
-                        imageView.setImage(FileType.of(FileUtils.getExtension(item)).getImage());
+                        Image image;
+                        if (getTreeTableRow().getTreeItem().getValue().isFile()) {
+                            image = FileType.of(FileUtils.getExtension(item)).getImage();
+                        } else {
+                            image = FileType.DIRECTORY_IMAGE;
+                        }
+                        imageView.setImage(image);
                         VBox vBox = new VBox(imageView);
                         vBox.setAlignment(Pos.CENTER);
                         vBox.setMinSize(size, size);

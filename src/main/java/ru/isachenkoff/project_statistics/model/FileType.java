@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 @Getter
 public class FileType {
 
+    public static final Image DIRECTORY_IMAGE;
     private static final String IMAGES_FILE_TYPES_DIR = "images/file_types/";
     private static final Map<String, Image> typeImageMap = new HashMap<>();
     private static final Image DEFAULT_FILE_IMAGE;
@@ -24,6 +25,9 @@ public class FileType {
     static {
         InputStream resource = Main.class.getResourceAsStream(IMAGES_FILE_TYPES_DIR + "default file.png");
         DEFAULT_FILE_IMAGE = (resource != null) ? new Image(resource) : null;
+
+        InputStream dirImgRes = Main.class.getResourceAsStream(IMAGES_FILE_TYPES_DIR + "folder.png");
+        DIRECTORY_IMAGE = (dirImgRes != null) ? new Image(dirImgRes) : null;
     }
 
     private final String extension;
