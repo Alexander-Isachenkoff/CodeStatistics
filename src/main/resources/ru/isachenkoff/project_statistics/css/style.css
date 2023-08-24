@@ -120,3 +120,26 @@
 .file-types-list .list-cell:selected .label {
     -fx-text-fill: #181818;
 }
+
+.tool-button {
+    -fx-background-color: rgba(0,0,0,0);
+    -fx-padding: 0;
+    -fx-font-size: 1;
+    -fx-pref-width: 16;
+    -fx-pref-height: 16;
+    -fx-min-width: 16;
+    -fx-min-height: 16;
+}
+
+.line {
+    -fx-stroke: grey;
+    -fx-stroke-width: 2;
+}
+
+.tool-button:hover {
+    -fx-background-color: rgba(0,0,0,0.12);
+}
+
+.tool-button:pressed {
+    -fx-background-color: rgba(0,0,0,0.2);
+}
