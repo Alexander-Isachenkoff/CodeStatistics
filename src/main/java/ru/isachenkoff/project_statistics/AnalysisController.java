@@ -42,6 +42,7 @@ public class AnalysisController {
 
     private File directory;
     private StatFileRoot statFileRoot;
+    private boolean selectAllCheckChange;
 
     public static TreeItem<StatFile> buildTree(StatFile statFile) {
         TreeItem<StatFile> treeItem = new TreeItem<>(statFile);
@@ -175,17 +176,23 @@ public class AnalysisController {
         fileTypesBoolPairs.stream()
                 .map(Pair::getValue)
                 .forEach(prop -> prop.addListener((observable, oldValue, newValue) -> {
-                    statFileRoot.setExtFilter(getSelectedFileTypes());
-                    rebuildTable(statFileRoot);
+                    if (!selectAllCheckChange) {
+                        statFileRoot.setExtFilter(getSelectedFileTypes());
+                        rebuildTable(statFileRoot);
+                    }
                 }));
 
         fileTypeListView.getItems().setAll(fileTypesBoolPairs);
 
         statFileRoot.setExtFilter(getSelectedFileTypes());
         selectAllCheck.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            selectAllCheckChange = true;
             for (Pair<FileTypeStat, SimpleBooleanProperty> item : fileTypeListView.getItems()) {
                 item.getValue().set(newValue);
             }
+            selectAllCheckChange = false;
+            statFileRoot.setExtFilter(getSelectedFileTypes());
+            rebuildTable(statFileRoot);
         });
         emptyDirsCheck.selectedProperty().bindBidirectional(statFileRoot.emptyDirsProperty());
         textFilesOnlyCheck.selectedProperty().bindBidirectional(statFileRoot.textFilesOnlyProperty());
