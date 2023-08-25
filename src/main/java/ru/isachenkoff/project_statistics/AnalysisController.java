@@ -167,6 +167,7 @@ public class AnalysisController {
 
     public void analysis() {
         statFileRoot = new StatFileRoot(directory);
+        selectAllCheck.setText(String.format("Выбрать все (%d)", statFileRoot.flatFiles().size()));
 
         List<Pair<FileTypeStat, SimpleBooleanProperty>> fileTypesBoolPairs =
                 statFileRoot.getFileTypesStatistics().stream()
