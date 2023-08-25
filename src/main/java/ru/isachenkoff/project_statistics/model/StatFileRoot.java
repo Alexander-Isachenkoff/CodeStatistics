@@ -53,7 +53,6 @@ public class StatFileRoot extends StatFile {
         return emptyDirs.get();
     }
 
-
     public boolean isTextFilesOnly() {
         return textFilesOnly.get();
     }

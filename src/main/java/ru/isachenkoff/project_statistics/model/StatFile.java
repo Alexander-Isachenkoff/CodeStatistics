@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class StatFile {
 
@@ -30,11 +32,9 @@ public class StatFile {
         if (!statFile.isDirectory) {
             return Collections.singletonList(statFile);
         } else {
-            List<StatFile> flatChildren = new ArrayList<>();
-            for (StatFile child : statFile.children) {
-                flatChildren.addAll(flatFiles(child));
-            }
-            return flatChildren;
+            return statFile.children.parallelStream()
+                    .flatMap(child -> flatFiles(child).stream())
+                    .collect(Collectors.toList());
         }
     }
 
@@ -52,11 +52,22 @@ public class StatFile {
 
     private void init() {
         if (isDirectory) {
-            for (File file1 : Optional.ofNullable(file.listFiles()).orElse(new File[0])) {
-                StatFile statFile = new StatFile(file1);
-                children.add(statFile);
-                statFile.parent = this;
-            }
+            File[] files = Optional.ofNullable(file.listFiles()).orElse(new File[0]);
+            Stream.of(files).parallel()
+                    .map(StatFile::new)
+                    .forEach(statFile -> {
+                        children.add(statFile);
+                        statFile.parent = this;
+                    });
+            children.sort((f1, f2) -> {
+                if (f1.isFile() && f2.isDirectory) {
+                    return 1;
+                }
+                if (f1.isDirectory && f2.isFile()) {
+                    return -1;
+                }
+                return f1.getFileName().compareTo(f2.getFileName());
+            });
         } else {
             countLines();
         }
@@ -66,7 +77,7 @@ public class StatFile {
         if (isFile()) {
             return getRoot().getExtFilter().contains(FileUtils.getExtension(file)) && (!getRoot().isTextFilesOnly() || isTextFile);
         } else if (!getRoot().isEmptyDirs()) {
-            return flatFiles(this).stream().anyMatch(StatFile::isVisible);
+            return flatFiles().stream().anyMatch(StatFile::isVisible);
         }
         return true;
     }
