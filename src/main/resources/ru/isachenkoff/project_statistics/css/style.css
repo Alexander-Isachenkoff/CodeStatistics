@@ -153,3 +153,8 @@
     -fx-padding: 0;
     -fx-background-insets: 0;
 }
+
+.split-pane .table-view, .split-pane .tree-table-view {
+    -fx-border-color: lightgray;
+    -fx-border-width: 1;
+}

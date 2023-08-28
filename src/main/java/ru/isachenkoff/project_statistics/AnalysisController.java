@@ -41,6 +41,8 @@ public class AnalysisController {
     @FXML
     private TreeTableView<StatFile> table;
     @FXML
+    private TableView<FileTypeStat> fileTypesTable;
+    @FXML
     private PieChart pieChart;
 
     private File directory;
@@ -175,8 +177,8 @@ public class AnalysisController {
         selectAllCheck.setText(String.format("Выбрать все (%d)", statFileRoot.flatFiles().size()));
         System.out.printf("new StatFileRoot:\t%d мс%n", System.currentTimeMillis() - newStatFileTime);
 
-        List<Pair<FileTypeStat, SimpleBooleanProperty>> fileTypesBoolPairs =
-                statFileRoot.getFileTypesStatistics().stream()
+        List<FileTypeStat> fileTypesStatistics = statFileRoot.getFileTypesStatistics();
+        List<Pair<FileTypeStat, SimpleBooleanProperty>> fileTypesBoolPairs = fileTypesStatistics.stream()
                         .map(fileTypeStat -> new Pair<>(fileTypeStat, new SimpleBooleanProperty(true)))
                         .collect(Collectors.toList());
 
@@ -190,6 +192,7 @@ public class AnalysisController {
                 }));
 
         fileTypeListView.getItems().setAll(fileTypesBoolPairs);
+        fileTypesTable.getItems().setAll(fileTypesStatistics);
 
         statFileRoot.setExtFilter(getSelectedFileTypes());
         selectAllCheck.selectedProperty().addListener((observable, oldValue, newValue) -> {

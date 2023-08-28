@@ -30,7 +30,10 @@ public class StatFileRoot extends StatFile {
                     int linesCount = filesByExt.stream()
                             .mapToInt(StatFile::getTotalLines)
                             .sum();
-                    return new FileTypeStat(FileType.of(fileType), filesCount, linesCount);
+                    int notEmptyLinesCount = filesByExt.stream()
+                            .mapToInt(StatFile::getNotEmptyLines)
+                            .sum();
+                    return new FileTypeStat(FileType.of(fileType), filesCount, linesCount, notEmptyLinesCount);
                 })
                 .collect(Collectors.toList());
 
