@@ -6,7 +6,6 @@ import ru.isachenkoff.project_statistics.util.FileUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class StatFileRoot extends StatFile {
 
@@ -22,23 +21,15 @@ public class StatFileRoot extends StatFile {
         List<FileTypeStat> fileTypeStats = new ArrayList<>();
         List<String> fileTypes = getAllFileTypes();
         List<StatFile> allFiles = flatFiles();
+        long l = System.currentTimeMillis();
         for (String fileType : fileTypes) {
             int count = (int) allFiles.stream()
                     .filter(statFile -> FileUtils.getExtension(statFile.getFileName()).equals(fileType))
                     .count();
             fileTypeStats.add(new FileTypeStat(FileType.of(fileType), count));
         }
+        System.out.printf("getFileTypesStatistics:\t\t%d%n", System.currentTimeMillis() - l);
         return fileTypeStats;
-    }
-
-    public List<String> getAllFileTypes() {
-        return flatFiles().stream()
-                .filter(StatFile::isFile)
-                .map(StatFile::getFileName)
-                .map(FileUtils::getExtension)
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList());
     }
 
     public List<String> getExtFilter() {

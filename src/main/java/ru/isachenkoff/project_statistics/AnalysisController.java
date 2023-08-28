@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -21,6 +22,7 @@ import ru.isachenkoff.project_statistics.util.FileUtils;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AnalysisController {
@@ -39,6 +41,8 @@ public class AnalysisController {
     private TextField pathField;
     @FXML
     private TreeTableView<StatFile> table;
+    @FXML
+    private PieChart pieChart;
 
     private File directory;
     private StatFileRoot statFileRoot;
@@ -166,8 +170,11 @@ public class AnalysisController {
     }
 
     public void analysis() {
+        long analysisTime = System.currentTimeMillis();
+        long newStatFileTime = System.currentTimeMillis();
         statFileRoot = new StatFileRoot(directory);
         selectAllCheck.setText(String.format("Выбрать все (%d)", statFileRoot.flatFiles().size()));
+        System.out.printf("new StatFileRoot:\t%d мс%n", System.currentTimeMillis() - newStatFileTime);
 
         List<Pair<FileTypeStat, SimpleBooleanProperty>> fileTypesBoolPairs =
                 statFileRoot.getFileTypesStatistics().stream()
@@ -199,6 +206,8 @@ public class AnalysisController {
         textFilesOnlyCheck.selectedProperty().bindBidirectional(statFileRoot.textFilesOnlyProperty());
 
         rebuildTable(statFileRoot);
+        buildPieChart(statFileRoot);
+        System.out.printf("analysis:\t\t\t%d мс%n", System.currentTimeMillis() - analysisTime);
     }
 
     public void setDirectory(File dir) {
@@ -215,8 +224,25 @@ public class AnalysisController {
     }
 
     private void rebuildTable(StatFile statFile) {
+        long l = System.currentTimeMillis();
         TreeItem<StatFile> tree = buildTree(statFile);
         table.setRoot(tree);
+        System.out.printf("rebuildTable:\t\t%d мс%n", System.currentTimeMillis() - l);
+    }
+
+    private void buildPieChart(StatFile statFile) {
+        long l = System.currentTimeMillis();
+
+        Map<String, Integer> typeLinesMap = statFile.getFileTypesLinesStatistics();
+
+        List<PieChart.Data> data = typeLinesMap.entrySet().stream()
+                .sorted((e1, e2) -> -Integer.compare(e1.getValue(), e2.getValue()))
+                .map(entry -> new PieChart.Data(FileType.of(entry.getKey()).getTypeName() + " (" + entry.getValue() + ")", entry.getValue()))
+                .collect(Collectors.toList());
+        pieChart.getData().setAll(data);
+        pieChart.setTitle(directory.getAbsolutePath());
+
+        System.out.printf("buildPieChart:\t\t%d мс%n", System.currentTimeMillis() - l);
     }
 
     @FXML

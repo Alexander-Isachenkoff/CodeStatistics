@@ -5,10 +5,8 @@ import ru.isachenkoff.project_statistics.util.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,6 +34,30 @@ public class StatFile {
                     .flatMap(child -> flatFiles(child).stream())
                     .collect(Collectors.toList());
         }
+    }
+
+    public Map<String, Integer> getFileTypesLinesStatistics() {
+        List<String> fileTypes = getAllFileTypes();
+        List<StatFile> files = flatFiles();
+        return fileTypes.parallelStream().collect(Collectors.toMap(Function.identity(), fileType ->
+                files.stream()
+                        .filter(statFile -> FileUtils.getExtension(statFile.getFileName()).equals(fileType))
+                        .mapToInt(StatFile::getTotalLines)
+                        .sum()
+        ));
+    }
+
+    public List<String> getAllFileTypes() {
+        long l = System.currentTimeMillis();
+        List<String> strings = flatFiles().stream()
+                .filter(StatFile::isFile)
+                .map(StatFile::getFileName)
+                .map(FileUtils::getExtension)
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+        System.out.printf("getAllFileTypes:\t%d мс%n", System.currentTimeMillis() - l);
+        return strings;
     }
 
     public StatFileRoot getRoot() {

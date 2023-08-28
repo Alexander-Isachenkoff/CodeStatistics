@@ -51,12 +51,15 @@ public class FileType {
     }
 
     private static Map<String, FileType> load() {
+        long l = System.currentTimeMillis();
         InputStream resource = Main.class.getResourceAsStream("file_types.csv");
         BufferedReader reader = new BufferedReader(new InputStreamReader(resource));
-        return reader.lines()
+        Map<String, FileType> fileTypesMap = reader.lines()
                 .skip(1)
                 .map(s -> s.split(";"))
                 .collect(Collectors.toMap(s -> s[0], s -> new FileType(s[0], s[1], s[2])));
+        System.out.printf("load:\t\t%d%n", System.currentTimeMillis() - l);
+        return fileTypesMap;
     }
 
     public Image getImage() {
