@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
 <?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
@@ -9,8 +10,12 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
 
 <VBox prefHeight="680.0" prefWidth="1200.0" spacing="10.0" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.isachenkoff.project_statistics.AnalysisController">
     <children>
@@ -51,7 +56,28 @@
             <SplitPane dividerPositions="0.4" orientation="VERTICAL">
               <items>
                   <fx:include fx:id="fileTypesTable" source="file_types_table.fxml" />
-                  <PieChart fx:id="pieChart" legendSide="RIGHT" style="-fx-background-color: white; -fx-border-color: lightgray; -fx-border-radius: 5; -fx-background-radius: 5;" />
+                  <AnchorPane style="-fx-background-color: white; -fx-border-color: lightgray; -fx-background-radius: 5; -fx-border-radius: 5;">
+                     <children>
+                        <PieChart fx:id="pieChart" legendSide="RIGHT" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <Button mnemonicParsing="false" onAction="#onCopy" prefHeight="28.0" prefWidth="28.0" style="-fx-padding: 0; -fx-pref-width: 28; -fx-pref-height: 28;" styleClass="tool-button" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="14.0" stroke="GREY" strokeType="INSIDE" strokeWidth="1.5" width="12.0" />
+                                    <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="14.0" layoutX="6.0" layoutY="6.0" stroke="GREY" strokeType="INSIDE" strokeWidth="1.5" width="12.0" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                           <tooltip>
+                              <Tooltip text="Копировать">
+                                 <font>
+                                    <Font size="10.0" />
+                                 </font>
+                              </Tooltip>
+                           </tooltip>
+                        </Button>
+                     </children>
+                  </AnchorPane>
               </items>
             </SplitPane>
             </items>

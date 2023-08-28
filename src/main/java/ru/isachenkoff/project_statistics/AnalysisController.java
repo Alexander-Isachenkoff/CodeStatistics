@@ -1,11 +1,15 @@
 package ru.isachenkoff.project_statistics;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.FontSmoothingType;
@@ -15,7 +19,9 @@ import javafx.util.Pair;
 import ru.isachenkoff.project_statistics.model.FileTypeStat;
 import ru.isachenkoff.project_statistics.model.StatFile;
 import ru.isachenkoff.project_statistics.model.StatFileRoot;
+import ru.isachenkoff.project_statistics.util.SystemClipboard;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -198,6 +204,30 @@ public class AnalysisController {
         if (statFileRoot != null) {
             rebuildTable(statFileRoot);
         }
+    }
+
+    @FXML
+    private void onCopy() {
+        int width = (int) pieChart.getWidth();
+        int height = (int) pieChart.getHeight();
+        WritableImage image = new WritableImage(width, height);
+        pieChart.snapshot(new SnapshotParameters(), image);
+        SystemClipboard.setContent(SwingFXUtils.fromFXImage(image, new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)));
+
+        Tooltip tooltip = new Tooltip("Скопировано в буфер обмена");
+        double prefWidth = 160;
+        tooltip.setPrefWidth(prefWidth);
+        double xPos = pieChart.localToScene(pieChart.getLayoutBounds()).getMinX() + pieChart.getScene().getWindow().getX() + pieChart.getWidth() / 2 - prefWidth / 2;
+        double yPos = pieChart.localToScene(pieChart.getLayoutBounds()).getMinY() + pieChart.getScene().getWindow().getY() + pieChart.getHeight() / 2;
+        tooltip.show(pieChart, xPos, yPos);
+        new Thread(() -> {
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            Platform.runLater(tooltip::hide);
+        }).start();
     }
 
 }
