@@ -22,7 +22,6 @@ import ru.isachenkoff.project_statistics.util.FileUtils;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AnalysisController {
@@ -127,7 +126,7 @@ public class AnalysisController {
                 protected void updateItem(Pair<FileTypeStat, SimpleBooleanProperty> item, boolean empty) {
                     super.updateItem(item, empty);
                     if (!empty) {
-                        String text = String.format("%s (%d)", item.getKey().getFileType().getTypeName(), item.getKey().getCount());
+                        String text = String.format("%s (%d)", item.getKey().getFileType().getTypeName(), item.getKey().getFilesCount());
                         CheckBox checkBox = new CheckBox();
                         checkBox.selectedProperty().bindBidirectional(item.getValue());
                         ImageView imageView = new ImageView();
@@ -206,7 +205,7 @@ public class AnalysisController {
         textFilesOnlyCheck.selectedProperty().bindBidirectional(statFileRoot.textFilesOnlyProperty());
 
         rebuildTable(statFileRoot);
-        buildPieChart(statFileRoot);
+        buildPieChart();
         System.out.printf("analysis:\t\t\t%d мс%n", System.currentTimeMillis() - analysisTime);
     }
 
@@ -230,15 +229,16 @@ public class AnalysisController {
         System.out.printf("rebuildTable:\t\t%d мс%n", System.currentTimeMillis() - l);
     }
 
-    private void buildPieChart(StatFile statFile) {
+    private void buildPieChart() {
         long l = System.currentTimeMillis();
 
-        Map<String, Integer> typeLinesMap = statFile.getFileTypesLinesStatistics();
-
-        List<PieChart.Data> data = typeLinesMap.entrySet().stream()
-                .sorted((e1, e2) -> -Integer.compare(e1.getValue(), e2.getValue()))
-                .map(entry -> new PieChart.Data(FileType.of(entry.getKey()).getTypeName() + " (" + entry.getValue() + ")", entry.getValue()))
+        List<PieChart.Data> data = fileTypeListView.getItems().stream()
+                .map(Pair::getKey)
+                .filter(stat -> stat.getLinesCount() > 0)
+                .sorted((e1, e2) -> -Integer.compare(e1.getLinesCount(), e2.getLinesCount()))
+                .map(stat -> new PieChart.Data(stat.getFileType().getTypeName() + " (" + stat.getLinesCount() + ")", stat.getLinesCount()))
                 .collect(Collectors.toList());
+
         pieChart.getData().setAll(data);
         pieChart.setTitle(directory.getAbsolutePath());
 

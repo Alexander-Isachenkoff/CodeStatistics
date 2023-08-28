@@ -43,7 +43,7 @@ public class FileType {
         }
     }
 
-    static Map<String, FileType> getRegisteredFileTypes() {
+    synchronized static Map<String, FileType> getRegisteredFileTypes() {
         if (fileTypes == null) {
             fileTypes = load();
         }

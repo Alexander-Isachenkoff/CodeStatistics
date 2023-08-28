@@ -7,5 +7,6 @@ import lombok.Getter;
 @Getter
 public class FileTypeStat {
     private FileType fileType;
-    private int count;
+    private int filesCount;
+    private int linesCount;
 }
