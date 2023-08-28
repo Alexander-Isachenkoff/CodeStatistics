@@ -130,30 +130,46 @@ public class AnalysisController {
                 .map(Pair::getValue)
                 .forEach(prop -> prop.addListener((observable, oldValue, newValue) -> {
                     if (!selectAllCheckChange) {
-                        statFileRoot.setExtFilter(getSelectedFileTypes());
-                        rebuildTable(statFileRoot);
+                        statFileRoot.setExtFilter(getSelectedFileExtensions());
+                        rebuildFilesTreeTable();
+                        updateFileTypesTable();
+                        updatePieChart();
                     }
                 }));
 
         fileTypeListView.getItems().setAll(fileTypesBoolPairs);
-        fileTypesTable.getItems().setAll(fileTypesStatistics);
 
-        statFileRoot.setExtFilter(getSelectedFileTypes());
+        statFileRoot.setExtFilter(getSelectedFileExtensions());
         selectAllCheck.selectedProperty().addListener((observable, oldValue, newValue) -> {
             selectAllCheckChange = true;
             for (Pair<FileTypeStat, SimpleBooleanProperty> item : fileTypeListView.getItems()) {
                 item.getValue().set(newValue);
             }
             selectAllCheckChange = false;
-            statFileRoot.setExtFilter(getSelectedFileTypes());
-            rebuildTable(statFileRoot);
+            statFileRoot.setExtFilter(getSelectedFileExtensions());
+            rebuildFilesTreeTable();
+            updateFileTypesTable();
+            updatePieChart();
         });
         emptyDirsCheck.selectedProperty().bindBidirectional(statFileRoot.emptyDirsProperty());
         textFilesOnlyCheck.selectedProperty().bindBidirectional(statFileRoot.textFilesOnlyProperty());
 
-        rebuildTable(statFileRoot);
-        buildPieChart();
+        rebuildFilesTreeTable();
+        updatePieChart();
+        updateFileTypesTable();
+
         System.out.printf("analysis:\t\t\t%d мс%n", System.currentTimeMillis() - analysisTime);
+    }
+
+    private void updateFileTypesTable() {
+        fileTypesTable.getItems().setAll(getSelectedFileTypes());
+    }
+
+    private List<FileTypeStat> getSelectedFileTypes() {
+        return fileTypeListView.getItems().stream()
+                .filter(pair -> pair.getValue().get())
+                .map(Pair::getKey)
+                .collect(Collectors.toList());
     }
 
     public void setDirectory(File dir) {
@@ -162,25 +178,23 @@ public class AnalysisController {
         analysisBtn.setDisable(false);
     }
 
-    private List<String> getSelectedFileTypes() {
-        return fileTypeListView.getItems().stream()
-                .filter(pair -> pair.getValue().get())
-                .map(pair -> pair.getKey().getFileType().getExtension())
+    private List<String> getSelectedFileExtensions() {
+        return getSelectedFileTypes().stream()
+                .map(stat -> stat.getFileType().getExtension())
                 .collect(Collectors.toList());
     }
 
-    private void rebuildTable(StatFile statFile) {
+    private void rebuildFilesTreeTable() {
         long l = System.currentTimeMillis();
-        TreeItem<StatFile> tree = buildTree(statFile);
+        TreeItem<StatFile> tree = buildTree(statFileRoot);
         filesTreeTableView.setRoot(tree);
         System.out.printf("rebuildTable:\t\t%d мс%n", System.currentTimeMillis() - l);
     }
 
-    private void buildPieChart() {
+    private void updatePieChart() {
         long l = System.currentTimeMillis();
 
-        List<PieChart.Data> data = fileTypeListView.getItems().stream()
-                .map(Pair::getKey)
+        List<PieChart.Data> data = getSelectedFileTypes().stream()
                 .filter(stat -> stat.getLinesCount() > 0)
                 .sorted((e1, e2) -> -Integer.compare(e1.getLinesCount(), e2.getLinesCount()))
                 .map(stat -> new PieChart.Data(stat.getFileType().getTypeName() + " (" + stat.getLinesCount() + ")", stat.getLinesCount()))
@@ -195,14 +209,14 @@ public class AnalysisController {
     @FXML
     private void onEmptyDirs() {
         if (statFileRoot != null) {
-            rebuildTable(statFileRoot);
+            rebuildFilesTreeTable();
         }
     }
 
     @FXML
     private void onTextFiles() {
         if (statFileRoot != null) {
-            rebuildTable(statFileRoot);
+            rebuildFilesTreeTable();
         }
     }
 
