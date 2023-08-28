@@ -9,8 +9,6 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
-<?import javafx.scene.control.TreeTableColumn?>
-<?import javafx.scene.control.TreeTableView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
@@ -24,7 +22,7 @@
                 <Button fx:id="analysisBtn" disable="true" mnemonicParsing="false" onAction="#onAnalysis" text="Анализ" />
             </children>
         </HBox>
-        <SplitPane dividerPositions="0.16, 0.6" VBox.vgrow="ALWAYS">
+        <SplitPane dividerPositions="0.15, 0.62" VBox.vgrow="ALWAYS">
             <items>
                 <VBox spacing="10.0" SplitPane.resizableWithParent="false">
                     <children>
@@ -49,11 +47,7 @@
                         <CheckBox fx:id="textFilesOnlyCheck" mnemonicParsing="false" onAction="#onTextFiles" text="Только текстовые файлы" />
                     </children>
                 </VBox>
-                <TreeTableView fx:id="table">
-                    <columns>
-                        <TreeTableColumn prefWidth="202.0" text="Column X" />
-                    </columns>
-                </TreeTableView>
+            <fx:include fx:id="filesTreeTableView" source="files_tree_table_view.fxml" />
             <SplitPane dividerPositions="0.4" orientation="VERTICAL">
               <items>
                   <fx:include fx:id="fileTypesTable" source="file_types_table.fxml" />
