@@ -124,22 +124,16 @@ public class AnalysisController {
         List<FileTypeStat> fileTypesStatistics = statFileRoot.getFileTypesStatistics();
         List<Pair<FileTypeStat, SimpleBooleanProperty>> fileTypesBoolPairs = fileTypesStatistics.stream()
                 .map(fileTypeStat -> new Pair<>(fileTypeStat, new SimpleBooleanProperty(true)))
-                .collect(Collectors.toList());
-
-        fileTypesBoolPairs.stream()
-                .map(Pair::getValue)
-                .forEach(prop -> prop.addListener((observable, oldValue, newValue) -> {
+                .peek(pair -> pair.getValue().addListener((observable, oldValue, newValue) -> {
                     if (!selectAllCheckChange) {
                         statFileRoot.setExtFilter(getSelectedFileExtensions());
-                        rebuildFilesTreeTable();
-                        updateFileTypesTable();
-                        updatePieChart();
+                        updateViews();
                     }
-                }));
+                }))
+                .collect(Collectors.toList());
 
         fileTypeListView.getItems().setAll(fileTypesBoolPairs);
 
-        statFileRoot.setExtFilter(getSelectedFileExtensions());
         selectAllCheck.selectedProperty().addListener((observable, oldValue, newValue) -> {
             selectAllCheckChange = true;
             for (Pair<FileTypeStat, SimpleBooleanProperty> item : fileTypeListView.getItems()) {
@@ -147,18 +141,21 @@ public class AnalysisController {
             }
             selectAllCheckChange = false;
             statFileRoot.setExtFilter(getSelectedFileExtensions());
-            rebuildFilesTreeTable();
-            updateFileTypesTable();
-            updatePieChart();
+            updateViews();
         });
         emptyDirsCheck.selectedProperty().bindBidirectional(statFileRoot.emptyDirsProperty());
         textFilesOnlyCheck.selectedProperty().bindBidirectional(statFileRoot.textFilesOnlyProperty());
 
-        rebuildFilesTreeTable();
-        updatePieChart();
-        updateFileTypesTable();
+        statFileRoot.setExtFilter(getSelectedFileExtensions());
+        updateViews();
 
         System.out.printf("analysis:\t\t\t%d мс%n", System.currentTimeMillis() - analysisTime);
+    }
+
+    private void updateViews() {
+        rebuildFilesTreeTable();
+        updateFileTypesTable();
+        updatePieChart();
     }
 
     private void updateFileTypesTable() {
