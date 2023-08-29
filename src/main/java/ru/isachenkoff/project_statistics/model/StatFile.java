@@ -175,4 +175,28 @@ public class StatFile {
     public boolean isTextFile() {
         return isTextFile;
     }
+
+    public List<FileTypeStat> getFileTypesStatistics() {
+        List<String> fileTypes = getAllFileTypes();
+        List<StatFile> allFiles = flatFiles();
+        long l = System.currentTimeMillis();
+
+        List<FileTypeStat> fileTypeStats = fileTypes.parallelStream().map(fileType -> {
+                    List<StatFile> filesByExt = allFiles.stream()
+                            .filter(statFile -> FileUtils.getExtension(statFile.getFileName()).equals(fileType))
+                            .collect(Collectors.toList());
+                    int filesCount = filesByExt.size();
+                    int linesCount = filesByExt.stream()
+                            .mapToInt(StatFile::getTotalLines)
+                            .sum();
+                    int notEmptyLinesCount = filesByExt.stream()
+                            .mapToInt(StatFile::getNotEmptyLines)
+                            .sum();
+                    return new FileTypeStat(FileType.of(fileType), filesCount, linesCount, notEmptyLinesCount);
+                })
+                .collect(Collectors.toList());
+
+        System.out.printf("getFileTypesStatistics:\t\t%d%n", System.currentTimeMillis() - l);
+        return fileTypeStats;
+    }
 }
