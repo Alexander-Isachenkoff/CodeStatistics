@@ -162,3 +162,7 @@
     -fx-border-color: lightgray;
     -fx-border-width: 1;
 }
+
+.chart .chart-title {
+    -fx-font-size: 10pt;
+}
