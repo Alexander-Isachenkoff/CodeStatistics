@@ -3,13 +3,14 @@ package ru.isachenkoff.project_statistics.model;
 import javafx.beans.property.SimpleBooleanProperty;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class StatFileRoot extends StatFile {
 
     private final SimpleBooleanProperty emptyDirs = new SimpleBooleanProperty();
     private final SimpleBooleanProperty textFilesOnly = new SimpleBooleanProperty();
-    private List<String> extFilter;
+    private List<String> extFilter = new ArrayList<>();
 
     public StatFileRoot(File file) {
         super(file);
