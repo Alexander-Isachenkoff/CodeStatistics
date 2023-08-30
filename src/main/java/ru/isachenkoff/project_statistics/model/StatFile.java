@@ -1,5 +1,6 @@
 package ru.isachenkoff.project_statistics.model;
 
+import javafx.scene.image.Image;
 import ru.isachenkoff.project_statistics.util.FileUtils;
 
 import java.io.File;
@@ -12,7 +13,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class StatFile {
+public class StatFile implements Comparable<StatFile> {
 
     private final List<StatFile> children = new ArrayList<>();
     private final File file;
@@ -68,19 +69,11 @@ public class StatFile {
             File[] files = Optional.ofNullable(file.listFiles()).orElse(new File[0]);
             Stream.of(files).parallel()
                     .map(StatFile::new)
-                    .forEach(statFile -> {
+                    .sorted()
+                    .forEachOrdered(statFile -> {
                         children.add(statFile);
                         statFile.parent = this;
                     });
-            children.sort((f1, f2) -> {
-                if (f1.isFile() && f2.isDirectory) {
-                    return 1;
-                }
-                if (f1.isDirectory && f2.isFile()) {
-                    return -1;
-                }
-                return f1.getFileName().compareTo(f2.getFileName());
-            });
         } else {
             countLines();
         }
@@ -168,6 +161,10 @@ public class StatFile {
         return file.getName();
     }
 
+    public boolean isDirectory() {
+        return isDirectory;
+    }
+
     public boolean isFile() {
         return !isDirectory;
     }
@@ -206,6 +203,17 @@ public class StatFile {
         } else {
             return FileType.DIRECTORY_IMAGE;
         }
+    }
+
+    @Override
+    public int compareTo(StatFile statFile) {
+        if (this.isFile() && statFile.isDirectory) {
+            return 1;
+        }
+        if (this.isDirectory && statFile.isFile()) {
+            return -1;
+        }
+        return this.getFileName().compareTo(statFile.getFileName());
     }
 
 }
