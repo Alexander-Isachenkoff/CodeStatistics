@@ -199,4 +199,13 @@ public class StatFile {
         System.out.printf("getFileTypesStatistics:\t\t%d%n", System.currentTimeMillis() - l);
         return fileTypeStats;
     }
+
+    public Image getImage() {
+        if (isFile()) {
+            return FileType.of(FileUtils.getExtension(getFileName())).getImage();
+        } else {
+            return FileType.DIRECTORY_IMAGE;
+        }
+    }
+
 }

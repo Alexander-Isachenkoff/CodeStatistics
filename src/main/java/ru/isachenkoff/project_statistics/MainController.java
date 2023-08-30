@@ -30,18 +30,22 @@ public class MainController {
         DirectoryChooser dirChooser = new DirectoryChooser();
         File dir = dirChooser.showDialog(tabPane.getScene().getWindow());
         if (dir != null) {
-            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("fxml/analysis.fxml"));
-            Parent load;
-            try {
-                load = fxmlLoader.load();
-                AnalysisController controller = fxmlLoader.getController();
-                controller.setDirectory(dir);
-                controller.analysis();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            newTab(dir.getAbsolutePath(), load);
+            showNewAnalysis(dir);
         }
+    }
+
+    public void showNewAnalysis(File dir) {
+        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("fxml/analysis.fxml"));
+        Parent load;
+        try {
+            load = fxmlLoader.load();
+            AnalysisController controller = fxmlLoader.getController();
+            controller.setDirectory(dir);
+            controller.analysis();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        newTab(dir.getAbsolutePath(), load);
     }
 
     private void newTab(String title, Parent load) {
