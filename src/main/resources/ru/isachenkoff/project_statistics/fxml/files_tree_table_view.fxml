@@ -3,7 +3,7 @@
 <?import javafx.scene.control.TreeTableColumn?>
 <?import javafx.scene.control.TreeTableView?>
 
-<TreeTableView xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.isachenkoff.project_statistics.FilesTreeTableViewController">
+<TreeTableView fx:id="treeTableView" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.isachenkoff.project_statistics.FilesTreeTableViewController">
    <columns>
       <TreeTableColumn fx:id="fileColumn" prefWidth="300.0" text="Путь файла" />
       <TreeTableColumn fx:id="totalLinesColumn" prefWidth="110.0" style="-fx-alignment: CENTER_RIGHT;" text="Всего строк" />

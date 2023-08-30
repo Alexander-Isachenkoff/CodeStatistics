@@ -4,11 +4,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.geometry.Side;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TreeTableCell;
-import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -19,6 +15,8 @@ import ru.isachenkoff.project_statistics.model.StatFile;
 public class FilesTreeTableViewController {
 
     @FXML
+    private TreeTableView<StatFile> treeTableView;
+    @FXML
     private TreeTableColumn<StatFile, StatFile> fileColumn;
     @FXML
     private TreeTableColumn<StatFile, String> totalLinesColumn;
@@ -27,6 +25,28 @@ public class FilesTreeTableViewController {
 
     @FXML
     private void initialize() {
+        treeTableView.setRowFactory(param -> {
+            return new TreeTableRow<StatFile>() {
+                @Override
+                protected void updateItem(StatFile item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setContextMenu(createContextMenu(item));
+                }
+
+                private ContextMenu createContextMenu(StatFile item) {
+                    if (item != null && item.isDirectory()) {
+                        MenuItem analysisMenuItem = new MenuItem("Анализ");
+                        analysisMenuItem.setOnAction(event -> {
+                            MainController.getInstance().showNewAnalysis(item.getFile());
+                        });
+                        return new ContextMenu(analysisMenuItem);
+                    } else {
+                        return null;
+                    }
+                }
+            };
+        });
+
         fileColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().getValue()));
         fileColumn.setCellFactory(param -> new FileTableCell());
 
@@ -38,18 +58,6 @@ public class FilesTreeTableViewController {
     }
 
     static class FileTableCell extends TreeTableCell<StatFile, StatFile> {
-
-        private static void setContextMenu(StatFile statFile, HBox hBox) {
-            if (statFile.isDirectory()) {
-                MenuItem analysisMenuItem = new MenuItem("Анализ");
-                analysisMenuItem.setOnAction(event -> {
-                    MainController.getInstance().showNewAnalysis(statFile.getFile());
-                });
-                hBox.setOnContextMenuRequested(event -> {
-                    new ContextMenu(analysisMenuItem).show(hBox, Side.BOTTOM, event.getX(), event.getY() - hBox.getHeight());
-                });
-            }
-        }
 
         @Override
         protected void updateItem(StatFile statFile, boolean empty) {
@@ -75,7 +83,6 @@ public class FilesTreeTableViewController {
             text.setFontSmoothingType(FontSmoothingType.LCD);
             HBox hBox = new HBox(4, vBox, text);
             hBox.setAlignment(Pos.CENTER_LEFT);
-            setContextMenu(statFile, hBox);
             return hBox;
         }
 
