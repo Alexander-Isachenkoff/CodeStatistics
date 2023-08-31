@@ -54,7 +54,7 @@ public class AnalysisController {
     public static TreeItem<StatFile> buildTree(StatFile statFile) {
         TreeItem<StatFile> treeItem = new TreeItem<>(statFile);
         treeItem.setExpanded(true);
-        if (statFile.getFile().isDirectory()) {
+        if (statFile.isDirectory()) {
             List<TreeItem<StatFile>> collect = statFile.getChildren().parallelStream()
                     .filter(StatFile::isVisible)
                     .map(AnalysisController::buildTree)

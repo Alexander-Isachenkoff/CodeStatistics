@@ -1,6 +1,7 @@
 package ru.isachenkoff.project_statistics.model;
 
 import javafx.scene.image.Image;
+import lombok.Getter;
 import ru.isachenkoff.project_statistics.util.FileUtils;
 
 import java.io.File;
@@ -15,22 +16,29 @@ import java.util.stream.Stream;
 
 public class StatFile implements Comparable<StatFile> {
 
+    @Getter
     private final List<StatFile> children = new ArrayList<>();
-    private final File file;
+    @Getter
+    private final String fileName;
+    @Getter
+    private final String filePath;
+    @Getter
     private final boolean isDirectory;
+    @Getter
     private boolean isTextFile;
     private StatFile parent;
     private int totalLines;
     private int notEmptyLines;
 
     StatFile(File file) {
-        this.file = file;
+        fileName = file.getName();
+        filePath = file.getAbsolutePath();
         isDirectory = file.isDirectory();
-        init();
+        init(file);
     }
 
     public static List<StatFile> flatFiles(StatFile statFile) {
-        if (!statFile.isDirectory) {
+        if (statFile.isFile()) {
             return Collections.singletonList(statFile);
         } else {
             return statFile.children.parallelStream()
@@ -64,8 +72,8 @@ public class StatFile implements Comparable<StatFile> {
         return flatFiles(this);
     }
 
-    private void init() {
-        if (isDirectory) {
+    private void init(File file) {
+        if (isDirectory()) {
             File[] files = Optional.ofNullable(file.listFiles()).orElse(new File[0]);
             Stream.of(files).parallel()
                     .map(StatFile::new)
@@ -75,13 +83,13 @@ public class StatFile implements Comparable<StatFile> {
                         statFile.parent = this;
                     });
         } else {
-            countLines();
+            countLines(file);
         }
     }
 
     public boolean isVisible() {
         if (isFile()) {
-            return getRoot().getExtFilter().contains(FileUtils.getExtension(file)) && (!getRoot().isTextFilesOnly() || isTextFile);
+            return getRoot().getExtFilter().contains(FileUtils.getExtension(getFileName())) && (!getRoot().isTextFilesOnly() || isTextFile);
         } else if (!getRoot().isEmptyDirs()) {
             return flatFiles().stream().anyMatch(StatFile::isVisible);
         }
@@ -89,7 +97,7 @@ public class StatFile implements Comparable<StatFile> {
     }
 
     public int getTotalLines() {
-        if (isDirectory) {
+        if (isDirectory()) {
             return flatFiles().stream()
                     .filter(StatFile::isVisible)
                     .filter(StatFile::isTextFile)
@@ -101,7 +109,7 @@ public class StatFile implements Comparable<StatFile> {
     }
 
     public int getNotEmptyLines() {
-        if (isDirectory) {
+        if (isDirectory()) {
             return flatFiles().stream()
                     .filter(StatFile::isVisible)
                     .filter(StatFile::isTextFile)
@@ -112,7 +120,7 @@ public class StatFile implements Comparable<StatFile> {
         }
     }
 
-    private void countLines() {
+    private void countLines(File file) {
         List<String> lines;
         try {
             lines = Files.readAllLines(file.toPath());
@@ -126,7 +134,7 @@ public class StatFile implements Comparable<StatFile> {
     }
 
     public String getTotalLinesInfo() {
-        if (isTextFile || isDirectory) {
+        if (isTextFile || isDirectory()) {
             return String.valueOf(getTotalLines());
         } else {
             return "";
@@ -134,7 +142,7 @@ public class StatFile implements Comparable<StatFile> {
     }
 
     public String getNotEmptyLinesInfo() {
-        if (isTextFile || isDirectory) {
+        if (isTextFile || isDirectory()) {
             int totalLines = getTotalLines();
             int notEmptyLines = getNotEmptyLines();
             float notEmptyRatio;
@@ -147,30 +155,6 @@ public class StatFile implements Comparable<StatFile> {
         } else {
             return "";
         }
-    }
-
-    public List<StatFile> getChildren() {
-        return children;
-    }
-
-    public File getFile() {
-        return file;
-    }
-
-    public String getFileName() {
-        return file.getName();
-    }
-
-    public boolean isDirectory() {
-        return isDirectory;
-    }
-
-    public boolean isFile() {
-        return !isDirectory;
-    }
-
-    public boolean isTextFile() {
-        return isTextFile;
     }
 
     public List<FileTypeStat> getFileTypesStatistics() {
@@ -207,13 +191,17 @@ public class StatFile implements Comparable<StatFile> {
 
     @Override
     public int compareTo(StatFile statFile) {
-        if (this.isFile() && statFile.isDirectory) {
+        if (this.isFile() && statFile.isDirectory()) {
             return 1;
         }
-        if (this.isDirectory && statFile.isFile()) {
+        if (this.isDirectory() && statFile.isFile()) {
             return -1;
         }
         return this.getFileName().compareTo(statFile.getFileName());
+    }
+
+    public boolean isFile() {
+        return !isDirectory();
     }
 
 }

@@ -12,6 +12,8 @@ import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.Text;
 import ru.isachenkoff.project_statistics.model.StatFile;
 
+import java.io.File;
+
 public class FilesTreeTableViewController {
 
     @FXML
@@ -37,7 +39,7 @@ public class FilesTreeTableViewController {
                     if (item != null && item.isDirectory()) {
                         MenuItem analysisMenuItem = new MenuItem("Анализ");
                         analysisMenuItem.setOnAction(event -> {
-                            MainController.getInstance().showNewAnalysis(item.getFile());
+                            MainController.getInstance().showNewAnalysis(new File(item.getFilePath()));
                         });
                         return new ContextMenu(analysisMenuItem);
                     } else {
