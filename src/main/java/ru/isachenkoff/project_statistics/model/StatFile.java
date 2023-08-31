@@ -158,14 +158,15 @@ public class StatFile implements Comparable<StatFile> {
     }
 
     public List<FileTypeStat> getFileTypesStatistics() {
-        List<String> fileTypes = getAllFileTypes();
         List<StatFile> allFiles = flatFiles();
         long l = System.currentTimeMillis();
 
-        List<FileTypeStat> fileTypeStats = fileTypes.parallelStream().map(fileType -> {
-                    List<StatFile> filesByExt = allFiles.stream()
-                            .filter(statFile -> FileUtils.getExtension(statFile.getFileName()).equals(fileType))
-                            .collect(Collectors.toList());
+        List<FileTypeStat> fileTypeStats = allFiles.stream()
+                .collect(Collectors.groupingBy(statFile -> FileUtils.getExtension(statFile.getFileName())))
+                .entrySet()
+                .stream()
+                .map(entry -> {
+                    List<StatFile> filesByExt = entry.getValue();
                     int filesCount = filesByExt.size();
                     int linesCount = filesByExt.stream()
                             .mapToInt(StatFile::getTotalLines)
@@ -173,11 +174,11 @@ public class StatFile implements Comparable<StatFile> {
                     int notEmptyLinesCount = filesByExt.stream()
                             .mapToInt(StatFile::getNotEmptyLines)
                             .sum();
-                    return new FileTypeStat(FileType.of(fileType), filesCount, linesCount, notEmptyLinesCount);
+                    return new FileTypeStat(FileType.of(entry.getKey()), filesCount, linesCount, notEmptyLinesCount);
                 })
                 .collect(Collectors.toList());
 
-        System.out.printf("getFileTypesStatistics:\t\t%d%n", System.currentTimeMillis() - l);
+        System.out.printf("getFileTypesStatistics:\t\t%d мс%n", System.currentTimeMillis() - l);
         return fileTypeStats;
     }
 
