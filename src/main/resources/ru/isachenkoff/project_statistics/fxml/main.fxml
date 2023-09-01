@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Line?>
 
-<VBox prefHeight="680.0" prefWidth="1220.0" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.isachenkoff.project_statistics.MainController">
+<VBox prefHeight="680.0" prefWidth="1220.0" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.isachenkoff.project_statistics.view.controller.MainController">
     <children>
         <ToolBar>
             <items>

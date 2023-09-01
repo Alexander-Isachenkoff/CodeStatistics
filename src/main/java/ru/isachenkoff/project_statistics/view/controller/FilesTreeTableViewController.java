@@ -1,4 +1,4 @@
-package ru.isachenkoff.project_statistics;
+package ru.isachenkoff.project_statistics.view.controller;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;

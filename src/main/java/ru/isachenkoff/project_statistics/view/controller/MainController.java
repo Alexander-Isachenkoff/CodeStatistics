@@ -1,4 +1,4 @@
-package ru.isachenkoff.project_statistics;
+package ru.isachenkoff.project_statistics.view.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -6,6 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.DirectoryChooser;
+import ru.isachenkoff.project_statistics.Main;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,15 +38,16 @@ public class MainController {
     public void showNewAnalysis(File dir) {
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("fxml/analysis.fxml"));
         Parent load;
+        AnalysisController controller;
         try {
             load = fxmlLoader.load();
-            AnalysisController controller = fxmlLoader.getController();
-            controller.setDirectory(dir);
-            controller.analysis();
+            controller = fxmlLoader.getController();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         newTab(dir.getAbsolutePath(), load);
+        controller.setDirectory(dir);
+        controller.analysis();
     }
 
     private void newTab(String title, Parent load) {

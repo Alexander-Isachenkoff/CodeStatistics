@@ -7,83 +7,90 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="680.0" prefWidth="1200.0" spacing="10.0" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.isachenkoff.project_statistics.AnalysisController">
-    <children>
-        <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <children>
-                <Label text="Папка:" />
-                <TextField fx:id="pathField" editable="false" HBox.hgrow="ALWAYS" />
-                <Button mnemonicParsing="false" onAction="#onChooseDir" text="Выбрать папку" />
-                <Button fx:id="analysisBtn" disable="true" mnemonicParsing="false" onAction="#onAnalysis" text="Анализ" />
-            </children>
-        </HBox>
-        <SplitPane dividerPositions="0.15, 0.62" VBox.vgrow="ALWAYS">
-            <items>
-                <VBox spacing="10.0" SplitPane.resizableWithParent="false">
-                    <children>
-                        <TitledPane text="Тип файла">
-                            <content>
-                                <VBox style="-fx-padding: 0;">
-                                    <children>
-                                        <HBox style="-fx-background-color: white; -fx-border-color: lightgray; -fx-border-width: 0 0 1 0;">
-                                            <children>
-                                                <CheckBox fx:id="selectAllCheck" mnemonicParsing="false" selected="true" text="Выбрать все" />
-                                            </children>
-                                            <padding>
-                                                <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                                            </padding>
-                                        </HBox>
-                                        <ListView fx:id="fileTypeListView" prefHeight="250.0" prefWidth="180.0" styleClass="file-types-list" />
-                                    </children>
-                                </VBox>
-                            </content>
-                        </TitledPane>
-                        <CheckBox fx:id="emptyDirsCheck" mnemonicParsing="false" onAction="#onEmptyDirs" text="Пустые папки" />
-                        <CheckBox fx:id="textFilesOnlyCheck" mnemonicParsing="false" onAction="#onTextFiles" text="Только текстовые файлы" />
-                    </children>
-                </VBox>
-            <fx:include fx:id="filesTreeTableView" source="files_tree_table_view.fxml" />
-            <SplitPane dividerPositions="0.4" orientation="VERTICAL">
-              <items>
-                  <fx:include fx:id="fileTypesTable" source="file_types_table.fxml" />
-                  <AnchorPane style="-fx-background-color: white; -fx-border-color: lightgray; -fx-background-radius: 5; -fx-border-radius: 5;">
-                     <children>
-                        <PieChart fx:id="pieChart" legendSide="RIGHT" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                        <Button mnemonicParsing="false" onAction="#onCopy" prefHeight="28.0" prefWidth="28.0" style="-fx-padding: 0; -fx-pref-width: 28; -fx-pref-height: 28;" styleClass="tool-button" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
-                           <graphic>
-                              <Group>
-                                 <children>
-                                    <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="14.0" stroke="GREY" strokeType="INSIDE" strokeWidth="1.5" width="12.0" />
-                                    <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="14.0" layoutX="6.0" layoutY="6.0" stroke="GREY" strokeType="INSIDE" strokeWidth="1.5" width="12.0" />
-                                 </children>
-                              </Group>
-                           </graphic>
-                           <tooltip>
-                              <Tooltip text="Копировать">
-                                 <font>
-                                    <Font size="10.0" />
-                                 </font>
-                              </Tooltip>
-                           </tooltip>
-                        </Button>
-                     </children>
-                  </AnchorPane>
-              </items>
-            </SplitPane>
-            </items>
-        </SplitPane>
-    </children>
-    <padding>
-        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-    </padding>
-</VBox>
+<StackPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.isachenkoff.project_statistics.view.controller.AnalysisController">
+   <children>
+      <VBox fx:id="analysisPane" prefHeight="680.0" prefWidth="1200.0" spacing="10.0" stylesheets="@../css/style.css">
+          <children>
+              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                  <children>
+                      <Label text="Папка:" />
+                      <TextField fx:id="pathField" editable="false" HBox.hgrow="ALWAYS" />
+                      <Button mnemonicParsing="false" onAction="#onChooseDir" text="Выбрать папку" />
+                      <Button fx:id="analysisBtn" disable="true" mnemonicParsing="false" onAction="#onAnalysis" text="Анализ" />
+                  </children>
+              </HBox>
+              <SplitPane dividerPositions="0.15, 0.62" VBox.vgrow="ALWAYS">
+                  <items>
+                      <VBox spacing="10.0" SplitPane.resizableWithParent="false">
+                          <children>
+                              <TitledPane text="Тип файла">
+                                  <content>
+                                      <VBox style="-fx-padding: 0;">
+                                          <children>
+                                              <HBox style="-fx-background-color: white; -fx-border-color: lightgray; -fx-border-width: 0 0 1 0;">
+                                                  <children>
+                                                      <CheckBox fx:id="selectAllCheck" mnemonicParsing="false" text="Выбрать все" />
+                                                  </children>
+                                                  <padding>
+                                                      <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                                                  </padding>
+                                              </HBox>
+                                              <ListView fx:id="fileTypeListView" prefHeight="250.0" prefWidth="180.0" styleClass="file-types-list" />
+                                          </children>
+                                      </VBox>
+                                  </content>
+                              </TitledPane>
+                              <CheckBox fx:id="emptyDirsCheck" mnemonicParsing="false" onAction="#onEmptyDirs" text="Пустые папки" />
+                              <CheckBox fx:id="textFilesOnlyCheck" mnemonicParsing="false" onAction="#onTextFiles" text="Только текстовые файлы" />
+                          </children>
+                      </VBox>
+                  <fx:include fx:id="filesTreeTableView" source="files_tree_table_view.fxml" />
+                  <SplitPane dividerPositions="0.4" orientation="VERTICAL">
+                    <items>
+                        <fx:include fx:id="fileTypesTable" source="file_types_table.fxml" />
+                        <AnchorPane style="-fx-background-color: white; -fx-border-color: lightgray; -fx-background-radius: 5; -fx-border-radius: 5;">
+                           <children>
+                              <PieChart fx:id="pieChart" legendSide="RIGHT" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <Button mnemonicParsing="false" onAction="#onCopy" prefHeight="28.0" prefWidth="28.0" style="-fx-padding: 0; -fx-pref-width: 28; -fx-pref-height: 28;" styleClass="tool-button" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
+                                 <graphic>
+                                    <Group>
+                                       <children>
+                                          <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="14.0" stroke="GREY" strokeType="INSIDE" strokeWidth="1.5" width="12.0" />
+                                          <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="14.0" layoutX="6.0" layoutY="6.0" stroke="GREY" strokeType="INSIDE" strokeWidth="1.5" width="12.0" />
+                                       </children>
+                                    </Group>
+                                 </graphic>
+                                 <tooltip>
+                                    <Tooltip text="Копировать">
+                                       <font>
+                                          <Font size="10.0" />
+                                       </font>
+                                    </Tooltip>
+                                 </tooltip>
+                              </Button>
+                           </children>
+                        </AnchorPane>
+                    </items>
+                  </SplitPane>
+                  </items>
+              </SplitPane>
+          </children>
+          <padding>
+              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+          </padding>
+      </VBox>
+      <ProgressIndicator fx:id="progress" maxHeight="80.0" maxWidth="80.0" />
+   </children>
+</StackPane>

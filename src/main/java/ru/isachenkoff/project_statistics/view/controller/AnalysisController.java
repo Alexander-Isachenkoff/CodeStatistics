@@ -1,10 +1,11 @@
-package ru.isachenkoff.project_statistics;
+package ru.isachenkoff.project_statistics.view.controller;
 
 import javafx.application.Platform;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ListChangeListener;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
@@ -15,19 +16,22 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
-import javafx.util.Pair;
 import ru.isachenkoff.project_statistics.model.FileTypeStat;
 import ru.isachenkoff.project_statistics.model.StatFile;
 import ru.isachenkoff.project_statistics.model.StatFileRoot;
 import ru.isachenkoff.project_statistics.util.SystemClipboard;
+import ru.isachenkoff.project_statistics.view.util.SelectableListCellFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class AnalysisController {
 
+    public VBox analysisPane;
+    public ProgressIndicator progress;
     @FXML
     private TreeTableView<StatFile> filesTreeTableView;
     @FXML
@@ -37,7 +41,7 @@ public class AnalysisController {
     @FXML
     private CheckBox textFilesOnlyCheck;
     @FXML
-    private ListView<Pair<FileTypeStat, SimpleBooleanProperty>> fileTypeListView;
+    private ListView<FileTypeStat> fileTypeListView;
     @FXML
     private Button analysisBtn;
     @FXML
@@ -49,7 +53,6 @@ public class AnalysisController {
 
     private File directory;
     private StatFileRoot statFileRoot;
-    private boolean selectAllCheckChange;
 
     public static TreeItem<StatFile> buildTree(StatFile statFile) {
         TreeItem<StatFile> treeItem = new TreeItem<>(statFile);
@@ -66,35 +69,37 @@ public class AnalysisController {
 
     @FXML
     private void initialize() {
-        fileTypeListView.setCellFactory(param -> {
-            return new ListCell<Pair<FileTypeStat, SimpleBooleanProperty>>() {
-                @Override
-                protected void updateItem(Pair<FileTypeStat, SimpleBooleanProperty> item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (!empty) {
-                        String text = String.format("%s (%d)", item.getKey().getFileType().getTypeName(), item.getKey().getFilesCount());
-                        CheckBox checkBox = new CheckBox();
-                        checkBox.selectedProperty().bindBidirectional(item.getValue());
-                        ImageView imageView = new ImageView();
-                        imageView.setPreserveRatio(true);
-                        int size = 20;
-                        imageView.setFitWidth(size);
-                        imageView.setFitHeight(size);
-                        imageView.setImage(item.getKey().getFileType().getImage());
-                        VBox vBox = new VBox(imageView);
-                        vBox.setAlignment(Pos.CENTER);
-                        vBox.setMinSize(size, size);
-                        Text textNode = new Text(text);
-                        textNode.setFontSmoothingType(FontSmoothingType.LCD);
-                        HBox hBox = new HBox(4, vBox, textNode);
-                        hBox.setAlignment(Pos.CENTER_LEFT);
-                        checkBox.setGraphic(hBox);
-                        setGraphic(checkBox);
-                    } else {
-                        setGraphic(null);
-                    }
-                }
-            };
+        fileTypeListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        fileTypeListView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<FileTypeStat>) c -> {
+            List<FileTypeStat> stats = new ArrayList<>(c.getList());
+            List<String> extensions = stats.stream()
+                    .map(stat -> stat.getFileType().getExtension())
+                    .collect(Collectors.toList());
+            statFileRoot.setExtFilter(extensions);
+            updateViews(stats);
+        });
+        fileTypeListView.setCellFactory(new SelectableListCellFactory<FileTypeStat>() {
+            @Override
+            public Node createCheckBoxGraphic(FileTypeStat item) {
+                ImageView imageView = new ImageView();
+                imageView.setPreserveRatio(true);
+                int size = 20;
+                imageView.setFitWidth(size);
+                imageView.setFitHeight(size);
+                imageView.setImage(item.getFileType().getImage());
+                VBox vBox = new VBox(imageView);
+                vBox.setAlignment(Pos.CENTER);
+                vBox.setMinSize(size, size);
+
+                String text = String.format("%s (%d)", item.getFileType().getTypeName(), item.getFilesCount());
+                Text textNode = new Text(text);
+                textNode.setFontSmoothingType(FontSmoothingType.LCD);
+
+                HBox hBox = new HBox(4, vBox, textNode);
+                hBox.setAlignment(Pos.CENTER_LEFT);
+
+                return hBox;
+            }
         });
     }
 
@@ -115,58 +120,49 @@ public class AnalysisController {
     }
 
     public void analysis() {
-        long analysisTime = System.currentTimeMillis();
-        long newStatFileTime = System.currentTimeMillis();
+        analysisPane.setDisable(true);
+        progress.setVisible(true);
+
+        new Thread(() -> {
+            analysisInner();
+            analysisPane.setDisable(false);
+            progress.setVisible(false);
+        }).start();
+    }
+
+    private void analysisInner() {
         statFileRoot = new StatFileRoot(directory);
-        selectAllCheck.setText(String.format("Выбрать все (%d)", statFileRoot.flatFiles().size()));
-        System.out.printf("new StatFileRoot:\t%d мс%n", System.currentTimeMillis() - newStatFileTime);
-
-        List<FileTypeStat> fileTypesStatistics = statFileRoot.getFileTypesStatistics();
-        List<Pair<FileTypeStat, SimpleBooleanProperty>> fileTypesBoolPairs = fileTypesStatistics.stream()
-                .map(fileTypeStat -> new Pair<>(fileTypeStat, new SimpleBooleanProperty(true)))
-                .peek(pair -> pair.getValue().addListener((observable, oldValue, newValue) -> {
-                    if (!selectAllCheckChange) {
-                        statFileRoot.setExtFilter(getSelectedFileExtensions());
-                        updateViews();
-                    }
-                }))
-                .collect(Collectors.toList());
-
-        fileTypeListView.getItems().setAll(fileTypesBoolPairs);
+        statFileRoot.setExtFilter(statFileRoot.getAllFileTypes());
 
         selectAllCheck.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            selectAllCheckChange = true;
-            for (Pair<FileTypeStat, SimpleBooleanProperty> item : fileTypeListView.getItems()) {
-                item.getValue().set(newValue);
+            if (newValue) {
+                fileTypeListView.getSelectionModel().selectAll();
+            } else {
+                fileTypeListView.getSelectionModel().clearSelection();
             }
-            selectAllCheckChange = false;
-            statFileRoot.setExtFilter(getSelectedFileExtensions());
-            updateViews();
         });
         emptyDirsCheck.selectedProperty().bindBidirectional(statFileRoot.emptyDirsProperty());
         textFilesOnlyCheck.selectedProperty().bindBidirectional(statFileRoot.textFilesOnlyProperty());
 
-        statFileRoot.setExtFilter(getSelectedFileExtensions());
-        updateViews();
+        List<FileTypeStat> fileTypesStatistics = statFileRoot.getFileTypesStatistics();
 
-        System.out.printf("analysis:\t\t\t%d мс%n", System.currentTimeMillis() - analysisTime);
+        Platform.runLater(() -> {
+            selectAllCheck.setText(String.format("Выбрать все (%d)", statFileRoot.flatFiles().size()));
+            fileTypeListView.getItems().setAll(fileTypesStatistics);
+            selectAllCheck.setSelected(true);
+            fileTypeListView.getSelectionModel().selectAll();
+        });
     }
 
-    private void updateViews() {
+    private void updateViews(List<FileTypeStat> fileTypeStats) {
+        System.out.println("updateViews");
         rebuildFilesTreeTable();
-        updateFileTypesTable();
-        updatePieChart();
+        updateFileTypesTable(fileTypeStats);
+        updatePieChart(fileTypeStats);
     }
 
-    private void updateFileTypesTable() {
-        fileTypesTable.getItems().setAll(getSelectedFileTypes());
-    }
-
-    private List<FileTypeStat> getSelectedFileTypes() {
-        return fileTypeListView.getItems().stream()
-                .filter(pair -> pair.getValue().get())
-                .map(Pair::getKey)
-                .collect(Collectors.toList());
+    private void updateFileTypesTable(List<FileTypeStat> fileTypeStats) {
+        fileTypesTable.getItems().setAll(fileTypeStats);
     }
 
     public void setDirectory(File dir) {
@@ -175,32 +171,22 @@ public class AnalysisController {
         analysisBtn.setDisable(false);
     }
 
-    private List<String> getSelectedFileExtensions() {
-        return getSelectedFileTypes().stream()
-                .map(stat -> stat.getFileType().getExtension())
-                .collect(Collectors.toList());
-    }
-
     private void rebuildFilesTreeTable() {
-        long l = System.currentTimeMillis();
         TreeItem<StatFile> tree = buildTree(statFileRoot);
-        filesTreeTableView.setRoot(tree);
-        System.out.printf("rebuildTable:\t\t%d мс%n", System.currentTimeMillis() - l);
+        Platform.runLater(() -> filesTreeTableView.setRoot(tree));
     }
 
-    private void updatePieChart() {
-        long l = System.currentTimeMillis();
-
-        List<PieChart.Data> data = getSelectedFileTypes().stream()
+    private void updatePieChart(List<FileTypeStat> fileTypeStats) {
+        List<PieChart.Data> data = fileTypeStats.stream()
                 .filter(stat -> stat.getLinesCount() > 0)
                 .sorted((e1, e2) -> -Integer.compare(e1.getLinesCount(), e2.getLinesCount()))
                 .map(stat -> new PieChart.Data(stat.getFileType().getTypeName() + " (" + stat.getLinesCount() + ")", stat.getLinesCount()))
                 .collect(Collectors.toList());
 
-        pieChart.getData().setAll(data);
-        pieChart.setTitle(directory.getAbsolutePath());
-
-        System.out.printf("buildPieChart:\t\t%d мс%n", System.currentTimeMillis() - l);
+        Platform.runLater(() -> {
+            pieChart.getData().setAll(data);
+            pieChart.setTitle(directory.getAbsolutePath());
+        });
     }
 
     @FXML
