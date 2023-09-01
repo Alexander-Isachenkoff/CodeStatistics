@@ -20,7 +20,7 @@ import ru.isachenkoff.project_statistics.model.FileTypeStat;
 import ru.isachenkoff.project_statistics.model.StatFile;
 import ru.isachenkoff.project_statistics.model.StatFileRoot;
 import ru.isachenkoff.project_statistics.util.SystemClipboard;
-import ru.isachenkoff.project_statistics.view.util.SelectableListCellFactory;
+import ru.isachenkoff.project_statistics.view.util.CheckBoxListCell;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -78,7 +78,7 @@ public class AnalysisController {
             statFileRoot.setExtFilter(extensions);
             updateViews(stats);
         });
-        fileTypeListView.setCellFactory(new SelectableListCellFactory<FileTypeStat>() {
+        fileTypeListView.setCellFactory(param -> new CheckBoxListCell<FileTypeStat>() {
             @Override
             public Node createCheckBoxGraphic(FileTypeStat item) {
                 ImageView imageView = new ImageView();
