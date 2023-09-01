@@ -1,30 +1,22 @@
 package ru.isachenkoff.project_statistics.view.controller;
 
 import javafx.application.Platform;
-import javafx.collections.ListChangeListener;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.FontSmoothingType;
-import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import ru.isachenkoff.project_statistics.model.FileTypeStat;
 import ru.isachenkoff.project_statistics.model.StatFile;
 import ru.isachenkoff.project_statistics.model.StatFileRoot;
 import ru.isachenkoff.project_statistics.util.SystemClipboard;
-import ru.isachenkoff.project_statistics.view.util.CheckBoxListCell;
+import ru.isachenkoff.project_statistics.view.FileTypeStatCheckBoxListCell;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,36 +61,10 @@ public class AnalysisController {
 
     @FXML
     private void initialize() {
-        fileTypeListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        fileTypeListView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<FileTypeStat>) c -> {
-            List<FileTypeStat> stats = new ArrayList<>(c.getList());
-            List<String> extensions = stats.stream()
-                    .map(stat -> stat.getFileType().getExtension())
-                    .collect(Collectors.toList());
-            statFileRoot.setExtFilter(extensions);
-            updateViews(stats);
-        });
-        fileTypeListView.setCellFactory(param -> new CheckBoxListCell<FileTypeStat>() {
+        fileTypeListView.setCellFactory(param -> new FileTypeStatCheckBoxListCell() {
             @Override
-            public Node createCheckBoxGraphic(FileTypeStat item) {
-                ImageView imageView = new ImageView();
-                imageView.setPreserveRatio(true);
-                int size = 20;
-                imageView.setFitWidth(size);
-                imageView.setFitHeight(size);
-                imageView.setImage(item.getFileType().getImage());
-                VBox vBox = new VBox(imageView);
-                vBox.setAlignment(Pos.CENTER);
-                vBox.setMinSize(size, size);
-
-                String text = String.format("%s (%d)", item.getFileType().getTypeName(), item.getFilesCount());
-                Text textNode = new Text(text);
-                textNode.setFontSmoothingType(FontSmoothingType.LCD);
-
-                HBox hBox = new HBox(4, vBox, textNode);
-                hBox.setAlignment(Pos.CENTER_LEFT);
-
-                return hBox;
+            public void onCheckBoxAction(FileTypeStat fileTypeStat) {
+                update();
             }
         });
     }
@@ -134,29 +100,35 @@ public class AnalysisController {
         statFileRoot = new StatFileRoot(directory);
         statFileRoot.setExtFilter(statFileRoot.getAllFileTypes());
 
-        selectAllCheck.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                fileTypeListView.getSelectionModel().selectAll();
-            } else {
-                fileTypeListView.getSelectionModel().clearSelection();
+        selectAllCheck.setOnAction(event -> {
+            for (FileTypeStat fileTypeStat : fileTypeListView.getItems()) {
+                fileTypeStat.getVisibleProperty().set(selectAllCheck.isSelected());
             }
+            update();
         });
-        emptyDirsCheck.selectedProperty().bindBidirectional(statFileRoot.emptyDirsProperty());
-        textFilesOnlyCheck.selectedProperty().bindBidirectional(statFileRoot.textFilesOnlyProperty());
 
         List<FileTypeStat> fileTypesStatistics = statFileRoot.getFileTypesStatistics();
 
         Platform.runLater(() -> {
             selectAllCheck.setText(String.format("Выбрать все (%d)", statFileRoot.flatFiles().size()));
             fileTypeListView.getItems().setAll(fileTypesStatistics);
-            selectAllCheck.setSelected(true);
-            fileTypeListView.getSelectionModel().selectAll();
+            update();
         });
+    }
+
+    private void update() {
+        updateViews(getSelectedFileTypes());
+    }
+
+    private List<FileTypeStat> getSelectedFileTypes() {
+        return fileTypeListView.getItems().stream()
+                .filter(FileTypeStat::isVisible)
+                .collect(Collectors.toList());
     }
 
     private void updateViews(List<FileTypeStat> fileTypeStats) {
         System.out.println("updateViews");
-        rebuildFilesTreeTable();
+        rebuildFilesTreeTable(fileTypeStats);
         updateFileTypesTable(fileTypeStats);
         updatePieChart(fileTypeStats);
     }
@@ -171,7 +143,13 @@ public class AnalysisController {
         analysisBtn.setDisable(false);
     }
 
-    private void rebuildFilesTreeTable() {
+    private void rebuildFilesTreeTable(List<FileTypeStat> fileTypeStats) {
+        List<String> extensions = fileTypeStats.stream()
+                .map(stat -> stat.getFileType().getExtension())
+                .collect(Collectors.toList());
+        statFileRoot.setExtFilter(extensions);
+        statFileRoot.setEmptyDirs(emptyDirsCheck.isSelected());
+        statFileRoot.setTextFilesOnly(textFilesOnlyCheck.isSelected());
         TreeItem<StatFile> tree = buildTree(statFileRoot);
         Platform.runLater(() -> filesTreeTableView.setRoot(tree));
     }
@@ -192,14 +170,14 @@ public class AnalysisController {
     @FXML
     private void onEmptyDirs() {
         if (statFileRoot != null) {
-            rebuildFilesTreeTable();
+            rebuildFilesTreeTable(getSelectedFileTypes());
         }
     }
 
     @FXML
     private void onTextFiles() {
         if (statFileRoot != null) {
-            rebuildFilesTreeTable();
+            rebuildFilesTreeTable(getSelectedFileTypes());
         }
     }
 

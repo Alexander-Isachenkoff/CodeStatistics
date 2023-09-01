@@ -1,5 +1,6 @@
 package ru.isachenkoff.project_statistics.model;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -10,6 +11,7 @@ public class FileTypeStat {
     private int filesCount;
     private int linesCount;
     private int notEmptyLinesCount;
+    private final SimpleBooleanProperty visibleProperty = new SimpleBooleanProperty(true);
 
     public String getNotEmptyLinesInfo() {
         float notEmptyRatio;
@@ -20,4 +22,9 @@ public class FileTypeStat {
         }
         return String.format("%d (%.0f%%)", notEmptyLinesCount, notEmptyRatio);
     }
+
+    public boolean isVisible() {
+        return visibleProperty.get();
+    }
+
 }

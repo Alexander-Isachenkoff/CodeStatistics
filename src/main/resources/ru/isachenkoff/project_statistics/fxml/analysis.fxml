@@ -41,7 +41,7 @@
                                           <children>
                                               <HBox style="-fx-background-color: white; -fx-border-color: lightgray; -fx-border-width: 0 0 1 0;">
                                                   <children>
-                                                      <CheckBox fx:id="selectAllCheck" mnemonicParsing="false" text="Выбрать все" />
+                                                      <CheckBox fx:id="selectAllCheck" mnemonicParsing="false" selected="true" text="Выбрать все" />
                                                   </children>
                                                   <padding>
                                                       <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
