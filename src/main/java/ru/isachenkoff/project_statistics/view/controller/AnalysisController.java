@@ -9,6 +9,8 @@ import javafx.scene.control.*;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import ru.isachenkoff.project_statistics.model.FileTypeStat;
 import ru.isachenkoff.project_statistics.model.StatFile;
 import ru.isachenkoff.project_statistics.model.StatFileRoot;
@@ -18,12 +20,17 @@ import ru.isachenkoff.project_statistics.view.FileTypeStatCheckBoxListCell;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class AnalysisController {
 
-    public VBox analysisPane;
-    public ProgressIndicator progress;
+    @FXML
+    private VBox analysisPane;
+    @FXML
+    private ProgressIndicator progress;
+    @FXML
+    private ComboBox<ChartType> chartTypeCmb;
     @FXML
     private TreeTableView<StatFile> filesTreeTableView;
     @FXML
@@ -67,6 +74,10 @@ public class AnalysisController {
                 update();
             }
         });
+
+        chartTypeCmb.getItems().setAll(ChartType.values());
+        chartTypeCmb.getSelectionModel().select(ChartType.LINES);
+        chartTypeCmb.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> updatePieChart(getSelectedFileTypes()));
     }
 
     @FXML
@@ -155,10 +166,13 @@ public class AnalysisController {
     }
 
     private void updatePieChart(List<FileTypeStat> fileTypeStats) {
+        ChartType chartType = chartTypeCmb.getSelectionModel().getSelectedItem();
+        Function<FileTypeStat, Integer> viewFunction = chartType.getViewFunction();
+
         List<PieChart.Data> data = fileTypeStats.stream()
                 .filter(stat -> stat.getLinesCount() > 0)
-                .sorted((e1, e2) -> -Integer.compare(e1.getLinesCount(), e2.getLinesCount()))
-                .map(stat -> new PieChart.Data(stat.getFileType().getTypeName() + " (" + stat.getLinesCount() + ")", stat.getLinesCount()))
+                .sorted((e1, e2) -> -Integer.compare(viewFunction.apply(e1), viewFunction.apply(e2)))
+                .map(stat -> new PieChart.Data(stat.getFileType().getTypeName() + " (" + viewFunction.apply(stat) + ")", viewFunction.apply(stat)))
                 .collect(Collectors.toList());
 
         Platform.runLater(() -> {
@@ -203,6 +217,21 @@ public class AnalysisController {
             }
             Platform.runLater(tooltip::hide);
         }).start();
+    }
+
+    @AllArgsConstructor
+    @Getter
+    private enum ChartType {
+        FILES("Файлы", FileTypeStat::getFilesCount),
+        LINES("Строки", FileTypeStat::getLinesCount);
+
+        private final String name;
+        private final Function<FileTypeStat, Integer> viewFunction;
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
 }
