@@ -70,28 +70,28 @@ class StatFileTest {
 
         assertEquals("c", statList.get(0).getFileType().getExtension());
         assertEquals("C", statList.get(0).getFileType().getTypeName());
-        assertEquals("c.png", statList.get(0).getFileType().getFileName());
+        assertEquals("c.png", statList.get(0).getFileType().getImageFileName());
         assertEquals(11, statList.get(0).getFilesCount());
         assertEquals(448, statList.get(0).getLinesCount());
         assertEquals("364 (81%)", statList.get(0).getNotEmptyLinesInfo());
 
         assertEquals("exe", statList.get(1).getFileType().getExtension());
         assertEquals("exe", statList.get(1).getFileType().getTypeName());
-        assertEquals(null, statList.get(1).getFileType().getFileName());
+        assertEquals(null, statList.get(1).getFileType().getImageFileName());
         assertEquals(7, statList.get(1).getFilesCount());
         assertEquals(0, statList.get(1).getLinesCount());
         assertEquals("0 (0%)", statList.get(1).getNotEmptyLinesInfo());
 
         assertEquals("h", statList.get(2).getFileType().getExtension());
         assertEquals("H", statList.get(2).getFileType().getTypeName());
-        assertEquals("c.png", statList.get(2).getFileType().getFileName());
+        assertEquals("c.png", statList.get(2).getFileType().getImageFileName());
         assertEquals(4, statList.get(2).getFilesCount());
         assertEquals(384, statList.get(2).getLinesCount());
         assertEquals("326 (85%)", statList.get(2).getNotEmptyLinesInfo());
 
         assertEquals("json", statList.get(3).getFileType().getExtension());
         assertEquals("JSON", statList.get(3).getFileType().getTypeName());
-        assertEquals("json.png", statList.get(3).getFileType().getFileName());
+        assertEquals("json.png", statList.get(3).getFileType().getImageFileName());
         assertEquals(4, statList.get(3).getFilesCount());
         assertEquals(86, statList.get(3).getLinesCount());
         assertEquals("86 (100%)", statList.get(3).getNotEmptyLinesInfo());

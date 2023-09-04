@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 public class FileType {
 
     public static final Image DIRECTORY_IMAGE;
+    public static final Image DEFAULT_FILE_IMAGE;
     private static final String IMAGES_FILE_TYPES_DIR = "images/file_types/";
     private static final Map<String, Image> typeImageMap = new HashMap<>();
-    private static final Image DEFAULT_FILE_IMAGE;
     private static Map<String, FileType> fileTypes;
 
     static {
@@ -32,7 +32,7 @@ public class FileType {
 
     private final String extension;
     private final String typeName;
-    private final String fileName;
+    private final String imageFileName;
 
     public static FileType of(String extension) {
         Map<String, FileType> types = getRegisteredFileTypes();
@@ -66,8 +66,8 @@ public class FileType {
         if (typeImageMap.containsKey(extension)) {
             return typeImageMap.get(extension);
         } else {
-            if (fileName != null) {
-                InputStream resource = Main.class.getResourceAsStream(IMAGES_FILE_TYPES_DIR + fileName);
+            if (imageFileName != null) {
+                InputStream resource = Main.class.getResourceAsStream(IMAGES_FILE_TYPES_DIR + imageFileName);
                 Image image = (resource != null) ? new Image(resource) : DEFAULT_FILE_IMAGE;
                 typeImageMap.put(extension, image);
                 return image;
