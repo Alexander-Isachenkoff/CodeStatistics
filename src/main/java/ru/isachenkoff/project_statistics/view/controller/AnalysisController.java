@@ -223,7 +223,8 @@ public class AnalysisController {
     @Getter
     private enum ChartType {
         FILES("Файлы", FileTypeStat::getFilesCount),
-        LINES("Строки", FileTypeStat::getLinesCount);
+        LINES("Строки", FileTypeStat::getLinesCount),
+        NOT_EMPTY_LINES("Непустые строки", FileTypeStat::getNotEmptyLinesCount);
 
         private final String name;
         private final Function<FileTypeStat, Integer> viewFunction;
