@@ -1,7 +1,9 @@
 package ru.isachenkoff.project_statistics.model;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import ru.isachenkoff.project_statistics.util.FileUtils;
 
 import java.io.File;
 import java.util.Arrays;
@@ -11,13 +13,20 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class StatFileTest {
 
+    public static final String TEST_TREE_ZIP = "src/test/resources/test_tree.zip";
     public static final String TEST_TREE_PATH = "src/test/resources/test_tree";
     private static StatFileRoot statFile;
 
     @BeforeAll
     static void beforeAll() {
+        FileUtils.unzip(TEST_TREE_ZIP, new File(TEST_TREE_ZIP).getParent());
         File file = new File(TEST_TREE_PATH);
         statFile = new StatFileRoot(file);
+    }
+
+    @AfterAll
+    static void afterAll() {
+        FileUtils.deleteDirectory(new File(TEST_TREE_PATH));
     }
 
     @Test
