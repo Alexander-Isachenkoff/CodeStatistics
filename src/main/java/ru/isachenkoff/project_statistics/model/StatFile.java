@@ -37,12 +37,12 @@ public class StatFile implements Comparable<StatFile> {
         init(file);
     }
 
-    public static List<StatFile> flatFiles(StatFile statFile) {
-        if (statFile.isFile()) {
-            return Collections.singletonList(statFile);
+    public List<StatFile> flatFiles() {
+        if (isFile()) {
+            return Collections.singletonList(this);
         } else {
-            return statFile.children.parallelStream()
-                    .flatMap(child -> flatFiles(child).stream())
+            return children.parallelStream()
+                    .flatMap(child -> child.flatFiles().stream())
                     .collect(Collectors.toList());
         }
     }
@@ -66,10 +66,6 @@ public class StatFile implements Comparable<StatFile> {
             parent = parent.parent;
         }
         return (StatFileRoot) parent;
-    }
-
-    public List<StatFile> flatFiles() {
-        return flatFiles(this);
     }
 
     private void init(File file) {
